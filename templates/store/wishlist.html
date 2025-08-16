@@ -1,0 +1,36 @@
+{% extends 'store/base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'wishlist.css' %}">
+
+<h2 class="wishlist-title">Your Wishlist 💖</h2>
+
+{% if wishlist_items %}
+  <div class="wishlist-grid">
+    {% for item in wishlist_items %}
+      <div class="wishlist-item">
+        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="wishlist-image">
+        
+        <div class="wishlist-details">
+          <h4>{{ item.product.name }}</h4>
+          <p><strong>Price:</strong> ₹{{ item.product.price }}</p>
+          <p><strong>Category:</strong> {{ item.product.category.title }}</p>
+          <p><strong>Vendor:</strong> {{ item.product.vendor.name }}</p>
+          <p><strong>Added on:</strong> {{ item.added_date|date:"M d, Y" }}</p>
+          
+          <div class="wishlist-actions">
+            <a href="{% url 'store:product_detail' item.product.slug %}" class="btn btn-sm btn-outline-primary">🔍 View Product</a>
+            <form action="{% url 'store:remove_from_wishlist' item.product.id %}" method="POST" style="display:inline">
+
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-danger">❌ Remove</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p class="wishlist-empty">No items in your wishlist 💔</p>
+{% endif %}
+{% endblock %}

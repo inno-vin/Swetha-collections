@@ -1,0 +1,63 @@
+{% extends "store/base.html" %}
+{% load static %}
+{% block content %}
+
+<div class="container" style="position:sticky;">  
+    <h2>🛒 Cart items</h2>
+
+    <div class="cart-grid">
+        <div class="cart-items">
+            {% for item in cart_items %}
+            <div class="cart-card"
+                data-id="{{ item.id }}"
+                data-size="{{ item.size|default:'' }}"
+                data-color="{{ item.color|default:'' }}"
+                data-image="{% if item.image %}{{ item.image.url }}{% else %}{{ item.product.image.url }}{% endif %}">
+
+                <div class="item-img">
+                    {% if item.image %}
+                        <img src="{{ item.image.url }}" alt="{{ item.product.name }}">
+                    {% else %}
+                        <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}">
+                    {% endif %}
+                </div>
+                <div class="item-details">
+                    <h4>{{ item.product.name }}</h4>
+                    <p>Color: {{ item.color|default:"—" }}</p>
+                    <p>Size: {{ item.size|default:"—" }}</p>
+                    <p>Price: ₹{{ item.price }}</p>
+                </div>
+                <div class="item-qty">
+                    <button class="qty-btn">-</button>
+                    <input type="number" value="{{ item.qty }}" readonly>
+                    <button class="qty-btn">+</button>
+                </div>
+                <div class="item-total">
+                    ₹{{ item.total }}
+                </div>
+                <div class="item-remove">
+                    <form action="{% url 'store:remove_from_cart' item.id %}" method="POST">
+                        {% csrf_token %}
+                        <button type="submit" class="delete-btn">🗑️</button>
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="summary">
+            <h3>Order Summary</h3>
+            <p>Subtotal: ₹{{ subtotal }}</p>
+            {% comment %} <p>Shipping: ₹{{ shipping_total }}</p> {% endcomment %}
+            <p>Free Shipping</p>
+            <p>Tax: ₹0</p>
+            <hr>
+            <p><strong>Total: ₹{{ grand_total }}</strong></p>
+            <form action="{% url 'store:checkout' %}" method="get">
+                <button type="submit" class="checkout-btn">Proceed To Checkout →</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

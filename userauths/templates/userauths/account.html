@@ -1,0 +1,314 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'account.css' %}">
+
+<div class="account-container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="avatar">
+      {% if profile.avatar %}
+        <img src="{{ profile.avatar.url }}" alt="Avatar" class="avatar-img">
+      {% else %}
+        <img src="{% static 'img/default-avatar.png' %}" alt="Avatar" class="avatar-img">
+      {% endif %}
+
+      <h3>{{ user.first_name|default:user.username }}</h3>
+      <p>Customer ID: #{{ user.id }}</p>
+    </div>
+
+     <ul class="nav-menu">
+      <li><a href="#" class="nav-link active" data-target="dashboard"><i class="fa fa-clipboard"></i> Dashboard</a></li>
+      <li><a href="#" class="nav-link" data-target="orders"><i class="fa-solid fa-box"></i> Orders</a></li>
+      <li><a href="#" class="nav-link" data-target="wishlist"><i class="fas fa-heart"></i> Wishlist</a></li>
+      <li><a href="#" class="nav-link" data-target="address"><i class="fa-solid fa-house"></i> Address</a></li>
+      <li><a href="#" class="nav-link" data-target="profile"><i class="fa fa-user"></i> Profile</a></li>
+      <li><a href="{% url 'userauths:logout' %}" class="logout"><i class="fa-solid fa-right-from-bracket"></i> Log Out</a></li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="tab active" id="dashboard">
+      <h2>📋 Dashboard</h2>
+      <div class="dashboard-summary">
+        <div class="summary-box">🛒<p>{{ orders.count }}<br><span>Orders</span></p></div>
+        <div class="summary-box">💰<p>₹{{ total_spent }}<br><span>Total Spent</span></p></div>
+        <div class="summary-box">🔔<p>2<br><span>Notifications</span></p></div>
+      </div>
+
+      <div class="recent-orders">
+        {% for order in orders|slice:":3" %}
+          <div class="order-card">
+            <p><strong>Order Number:</strong> #{{ order.order_id }}</p>
+
+            {% for item in order.items.all %}
+              <div class="order-product">
+                {% if item.image %}
+                  <img src="{{ item.image.url }}" alt="{{ item.product.name }}">
+                {% else %}
+                  <img src="{% static 'img/default-product.png' %}" alt="No image available">
+                {% endif %}
+                <p>{{ item.product.name }}<br>
+                <small>Vendor: {{ item.product.category.title }}</small></p>
+              </div>
+            {% endfor %}
+
+            <p>Status: {{ order.status }} | Payment: {{ order.payment_status }}</p>
+            <p>Order Time: {{ order.date }}</p>
+            <p>Total: ₹{{ order.total }}</p>
+
+            <a href="#"
+               class="btn btn-sm btn-outline-primary view-order-btn btn-order-right" style="text-decoration:none;border:2px solid #6a0dad;margin-right:568px; border-radius:6px;color:#6a0dad;"
+               data-order-id="{{ order.order_id }}">
+               View Order
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="tab" id="orders">
+      <h2>📦 Orders</h2>
+      {% if orders %}
+        {% for order in orders %}
+          <div class="order-card" id="order-{{ order.order_id }}">
+            <h3>Order ID: <strong>{{ order.order_id }}</strong></h3>
+
+            <p><strong>Status:</strong> {{ order.status }}</p>
+
+            <p><strong>Tracking ID:</strong>
+              {% if order.tracking_id %}
+                {{ order.tracking_id }}
+              {% else %}
+                <span class="text-warning">Processing</span>
+              {% endif %}
+            </p>
+
+            <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+            <p><strong>Payment Status:</strong> {{ order.payment_status }}</p>
+            <p><strong>Date:</strong> {{ order.date|date:"F j, Y, g:i a" }}</p>
+            <p><strong>Total:</strong> ₹{{ order.total }}</p>
+
+            <div class="order-items">
+              <strong>Items:</strong>
+              {% for item in order.items.all %}
+                <div class="order-item">
+                  <img src="{% if item.image and item.image.url %}{{ item.image.url }}{% else %}{{ item.product.image.url }}{% endif %}" alt="{{ item.product.name }}" style="width: 60px; height: auto;">
+
+                  <div>
+                    <p class="item-name">{{ item.product.name }}</p>
+                    <p style="margin-bottom:10px;">{{ item.qty }} × ₹{{ item.price }} = ₹{{ item.sub_total }}</p>
+
+                    {% if item.product and item.product.slug %}
+                      <a href="{% url 'store:product_detail' item.product.slug %}" class="btn btn-sm btn-outline-primary" style="text-decoration:none;border:2px solid #6a0dad; border-radius:6px;">View Product</a>
+
+                      <!-- Review button: passes product + order item id -->
+                      <button type="button"
+                              class="btn btn-sm btn-outline-primary review-btn"
+                              style="margin-left:8px; border:2px solid #6a0dad; border-radius:6px;background-color:white;color: #6a0dad; font-weight: bold;"
+                              data-product-id="{{ item.product.id }}"
+                              data-product-name="{{ item.product.name }}"
+                              data-order-item-id="{{ item.id }}">
+                        ★ Review
+                      </button>
+                    {% else %}
+                      <span class="text-danger">Product Unavailable</span>
+                    {% endif %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <p class="no-orders">You haven’t placed any orders yet.</p>
+      {% endif %}
+    </div>
+
+    <div class="tab" id="wishlist">
+      <h2>❤ Wishlist</h2>
+      {% if wishlist_items %}
+        <div class="wishlist-grid">
+          {% for item in wishlist_items %}
+            <div class="wishlist-item">
+              <a href="{% url 'store:product_detail' item.product.slug %}">
+                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" class="wishlist-image">
+              </a>
+              <div class="wishlist-details">
+                <h4><a href="{% url 'store:product_detail' item.product.slug %}" style="text-decoration: none; color: inherit;">{{ item.product.name }}</a></h4>
+                <p>₹{{ item.product.price }}</p>
+                <p><small>Category: {{ item.product.category.title }}</small></p>
+                <div class="wishlist-actions">
+                  <a href="{% url 'store:product_detail' item.product.slug %}" class="btn btn-view">👁 View</a>
+                  <a href="{% url 'userauths:remove_from_wishlist' item.product.id %}" class="btn btn-remove">✖ Remove</a>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p style="color:gray;">Your wishlist is empty.</p>
+      {% endif %}
+    </div>
+
+    <div class="tab" id="address">
+      <h2>Delivery Address</h2>
+      <form id="address-form" method="POST" action="{% url 'userauths:update_address' %}">
+        {% csrf_token %}
+        <label>Full Name</label>
+        <input type="text" name="full_name" value="{{ profile.full_name|default:'' }}" required>
+        <label>Mobile Number</label>
+        <input type="text" name="mobile" value="{{ profile.mobile|default:'' }}" required>
+        <label>Flat, House no., Building, Company, Apartment</label>
+        <input type="text" name="address" value="{{ profile.address|default:'' }}">
+        <label>Area, Street, Sector, Village</label>
+        <input type="text" name="city" value="{{ profile.city|default:'' }}">
+        <label>Landmark</label>
+        <input type="text" name="state" value="{{ profile.state|default:'' }}">
+        <label>Pincode</label>
+        <input type="text" name="postal_code" value="{{ profile.postal_code|default:'' }}">
+        <label>Country</label>
+        <input type="text" name="country" value="{{ profile.country|default:'' }}">
+        <button type="button" onclick="getLocation()" id="get-location-btn" style="margin-top: 10px;">📍 Use My Location</button>
+        <button type="submit">Update Address</button>
+      </form>
+    </div>
+
+    <div class="tab" id="profile">
+      <h2>👤 Profile</h2>
+      <form method="POST" enctype="multipart/form-data" action="{% url 'userauths:update_profile' %}">
+        {% csrf_token %}
+        <div class="form-group">
+          <label>Avatar</label>
+          <input type="file" name="avatar" class="form-control">
+        </div>
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" name="name" class="form-control" value="{{ user.get_full_name }}">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" class="form-control" value="{{ user.email }}" readonly>
+        </div>
+        <div class="form-group">
+          <label>Mobile</label>
+          <input type="text" name="mobile" class="form-control" value="{{ profile.mobile }}">
+        </div>
+        <button type="submit" class="btn btn-primary">💾 Save Changes</button>
+      </form>
+      <hr>
+
+      <!-- Toggle link -->
+      <a href="#" id="toggle-password-form"> Change Password</a>
+
+      <!-- Hidden form -->
+      <div id="password-form" style="display: none; margin-top: 20px;">
+        <form method="POST" action="{% url 'userauths:change_password' %}">
+          {% csrf_token %}
+          <div class="form-group">
+            <label>Current Password</label>
+            <input type="password" name="current_password" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>New Password</label>
+            <input type="password" name="new_password" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>Confirm New Password</label>
+            <input type="password" name="confirm_password" class="form-control" required>
+          </div>
+          <button type="submit" class="btn btn-warning mt-2">Update Password</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scroll to Top Button -->
+<button id="scrollToTopBtn" title="Go to top">⬆ Top</button>
+
+<!-- Review Modal -->
+<div id="review-modal" class="review-modal" aria-hidden="true">
+  <div class="review-dialog">
+    <button class="review-close" aria-label="Close">&times;</button>
+    <h3 class="review-title">Review: <span id="rv-product-name"></span></h3>
+
+    <form method="POST" action="{% url 'store:add_review' %}" id="review-form">
+      {% csrf_token %}
+      <input type="hidden" name="product_id" id="rv-product-id">
+      <input type="hidden" name="order_item_id" id="rv-order-item-id"><!-- IMPORTANT -->
+
+      <!-- Stars -->
+    <div class="star-picker" aria-label="Star rating">
+  {% for s in "54321"|make_list %}
+    <input type="radio" name="rating" id="star{{ s }}" value="{{ s }}" required>
+    <label for="star{{ s }}" title="{{ s }} star{% if s != '1' %}s{% endif %}">★</label>
+  {% endfor %}
+</div>
+
+      <!-- Textarea -->
+      <label for="rv-note" class="review-label">Your review</label>
+      <textarea id="rv-note" name="review" rows="4" class="review-text" placeholder="Tell us about the quality, fit, delivery, etc." required></textarea>
+
+      <div class="review-actions">
+        <button type="submit" class="btn btn-primary" style="border-radius:6px;">Submit Review</button>
+        <button type="button" class="btn btn-light review-cancel" style="border-radius:6px;">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Open modal with product info
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.review-btn');
+    if (!btn) return;
+
+    document.getElementById('rv-product-name').textContent = btn.dataset.productName || 'Product';
+    document.getElementById('rv-product-id').value = btn.dataset.productId || '';
+    document.getElementById('rv-order-item-id').value = btn.dataset.orderItemId || ''; // <-- set order item id
+    document.getElementById('rv-note').value = '';
+
+    // clear stars
+    document.querySelectorAll('#review-form input[name="rating"]').forEach(r => r.checked = false);
+
+    document.getElementById('review-modal').classList.add('open');
+    document.getElementById('review-modal').setAttribute('aria-hidden', 'false');
+  });
+
+  // Close handlers
+  document.querySelector('.review-close')?.addEventListener('click', () => {
+    document.getElementById('review-modal').classList.remove('open');
+    document.getElementById('review-modal').setAttribute('aria-hidden', 'true');
+  });
+  document.querySelector('.review-cancel')?.addEventListener('click', () => {
+    document.getElementById('review-modal').classList.remove('open');
+    document.getElementById('review-modal').setAttribute('aria-hidden', 'true');
+  });
+
+  // Click outside dialog closes
+  document.getElementById('review-modal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'review-modal') {
+      e.currentTarget.classList.remove('open');
+      e.currentTarget.setAttribute('aria-hidden', 'true');
+    }
+  });
+
+  // Star hover effect (purely visual)
+  const starPicker = document.querySelector('.star-picker');
+  if (starPicker) {
+    starPicker.addEventListener('mouseover', (e) => {
+      if (e.target.tagName !== 'LABEL') return;
+      const idx = Array.from(starPicker.querySelectorAll('label')).indexOf(e.target);
+      starPicker.classList.remove('s1','s2','s3','s4','s5');
+      starPicker.classList.add('s' + (idx + 1));
+    });
+    starPicker.addEventListener('mouseleave', () => {
+      starPicker.classList.remove('s1','s2','s3','s4','s5');
+    });
+  }
+</script>
+
+{% endblock %}

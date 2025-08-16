@@ -1,0 +1,187 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}main_page{% endblock %}
+
+{% block content %}
+<style>
+  .pay-wrap{
+    display:flex;justify-content:center;align-items:flex-start;
+    padding:96px 16px 48px; /* leave room for your site header */
+    background: transparent;
+  }
+  .pay-card{
+    width:100%; max-width:520px; background:#fff;
+    border:1px solid rgba(0,0,0,0.06); border-radius:16px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.08);
+    padding:24px 22px;
+  }
+  .pay-head{
+    display:flex;align-items:center;gap:14px;margin-bottom:10px;
+  }
+  .brand-pill{
+    width:44px;height:44px;border-radius:12px;
+    display:grid;place-items:center;
+    background:linear-gradient(135deg,#7c3aed 0%, #4f46e5 100%);
+    color:#fff;font-weight:700;font-size:18px;letter-spacing:.5px;
+    box-shadow:0 6px 18px rgba(99,102,241,0.35);
+  }
+  .pay-title{margin:0;font-size:20px;line-height:1.2;color:#111827;font-weight:700}
+  .pay-sub{margin:2px 0 0;color:#6b7280;font-size:13px}
+  .amount-row{
+    display:flex;justify-content:space-between;align-items:center;
+    margin:18px 0 6px;
+  }
+  .amount-badge{
+    font-size:28px; font-weight:800; color:#111827;
+    letter-spacing:.3px;
+  }
+  .secure{
+    display:flex;align-items:center;gap:8px;color:#10b981;font-weight:600;font-size:12px;
+    background:#ecfdf5;border:1px solid #a7f3d0;border-radius:999px;padding:6px 10px;
+  }
+  .secure svg{width:14px;height:14px;fill:#10b981}
+  .meta{
+    margin:12px 0 18px; color:#4b5563; font-size:13px; line-height:1.5;
+  }
+  .note-list{margin:0 0 16px 16px; color:#6b7280; font-size:12px}
+  .note-list li{margin:4px 0}
+  #rzp-button{
+    width:100%; border:none; border-radius:12px;
+    background:linear-gradient(135deg,#7c3aed 0%, #4f46e5 100%);
+    color:#fff; font-weight:700; letter-spacing:.3px;
+    padding:14px 18px; cursor:pointer; transition:transform .06s ease, box-shadow .2s ease;
+    box-shadow:0 8px 20px rgba(79,70,229,0.35);
+  }
+  #rzp-button:hover{transform:translateY(-1px);box-shadow:0 10px 24px rgba(79,70,229,0.42)}
+  #rzp-button:active{transform:translateY(0)}
+  #rzp-button[disabled]{opacity:.7;cursor:not-allowed}
+  .help-row{margin-top:14px; display:flex;justify-content:space-between;align-items:center;color:#6b7280;font-size:12px}
+  .help-row a{color:#4f46e5;text-decoration:none}
+  .divider{height:1px;background:linear-gradient(90deg,rgba(0,0,0,0.05),rgba(0,0,0,0.08),rgba(0,0,0,0.05)); margin:16px 0}
+</style>
+
+<div class="pay-wrap">
+  <div class="pay-card">
+    <div class="pay-head">
+      <div class="brand-pill">SC</div>
+      <div>
+        <h3 class="pay-title">Swetha Collections</h3>
+        <p class="pay-sub">Secure checkout powered by Razorpay</p>
+      </div>
+    </div>
+
+    <div class="amount-row">
+      <div class="amount-badge" id="amount-display">₹—</div>
+      <div class="secure" title="128-bit SSL & PCI-DSS">
+        <svg viewBox="0 0 24 24"><path d="M12 1a5 5 0 00-5 5v3H6a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2v-8a2 2 0 00-2-2h-1V6a5 5 0 00-5-5zm-3 8V6a3 3 0 016 0v3H9z"/></svg>
+        Secure
+      </div>
+    </div>
+
+    <p class="meta">
+      You’ll be redirected to the bank gateway to complete your payment. Please don’t refresh or close the window during the process.
+    </p>
+
+    <ul class="note-list">
+      <li>Cards, UPI, NetBanking & Wallets supported</li>
+      <li>You receive an order confirmation on success</li>
+    </ul>
+
+    <!-- Pay Button -->
+    <button id="rzp-button">Pay ₹<span id="amount-inline">—</span> now</button>
+
+    <div class="divider"></div>
+
+    <div class="help-row">
+      <span>Need help? <a href="mailto:{{ EMAIL_HOST_USER|default:'support@example.com' }}">Contact support</a></span>
+      <span>Refunds as per policy</span>
+    </div>
+  </div>
+</div>
+
+<!-- Razorpay Script (REQUIRED) -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Amount formatting (server sends paise; display ₹)
+    var amountPaise = parseInt("{{ amount|default:'0' }}") || 0;
+    var amountRupees = (amountPaise / 100).toFixed(2);
+    var amountDisplayEl = document.getElementById("amount-display");
+    var amountInlineEl  = document.getElementById("amount-inline");
+    if (amountDisplayEl) amountDisplayEl.textContent = "₹" + amountRupees;
+    if (amountInlineEl)  amountInlineEl.textContent  = amountRupees;
+
+    var payBtn = document.getElementById('rzp-button');
+
+    var options = {
+      "key": "{{ razorpay_key }}",       // Your Razorpay public key
+      "amount": "{{ amount }}",          // Amount in paise (e.g., 50000 for ₹500)
+      "currency": "INR",
+      "name": "Swetha Collections",
+      "description": "Test Transaction",
+      "order_id": "{{ order_id }}",      // Razorpay order ID from backend
+      "handler": function (response) {
+        // Show processing state
+        setBusy(false);
+        // Verify on server
+        fetch("{% url 'store:payment_callback' %}", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            "X-CSRFToken": "{{ csrf_token }}"
+          },
+          body: new URLSearchParams({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature
+          })
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'Payment successful') {
+            alert("Payment successful!");
+            window.location.href = "{% url 'store:order_success' %}";
+          } else {
+            alert("Payment verification failed.");
+          }
+        })
+        .catch(() => alert("Network error verifying payment. Please check your orders page."));
+      },
+      "modal": {
+        "ondismiss": function(){
+          setBusy(false);
+        }
+      },
+      "theme": { "color": "#4f46e5" } // nicer indigo to match card
+    };
+
+    var rzp1 = new Razorpay(options);
+
+    function setBusy(isBusy){
+      if (!payBtn) return;
+      if (isBusy){
+        payBtn.setAttribute('disabled', 'true');
+        payBtn.textContent = "Opening checkout…";
+      } else {
+        payBtn.removeAttribute('disabled');
+        payBtn.innerHTML = 'Pay ₹<span id="amount-inline">' + amountRupees + '</span> now';
+      }
+    }
+
+    if (payBtn){
+      payBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        setBusy(true);
+        try {
+          rzp1.open();
+        } catch (err) {
+          setBusy(false);
+          alert("Unable to open Razorpay checkout. Please try again.");
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

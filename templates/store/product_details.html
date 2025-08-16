@@ -1,0 +1,312 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block title %}
+  products_details
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="product-details">
+    <!-- IMAGES -->
+    <div class="product-images">
+      <div class="main-image">
+        <div class="zoom-container">
+          <img id="main-product-image" class="main-product-image" src="{{ product.image.url }}" alt="{{ product.name }}">
+          <div id="zoom-lens" class="zoom-lens"></div>
+          <div id="zoom-viewer" class="zoom-viewer"></div>
+
+          <!-- Mobile: floating wishlist heart (kept inside image wrapper) -->
+          {% if user.is_authenticated %}
+  <button class="wishlist-fab" type="button" aria-label="Add to wishlist" data-product-id="{{ product.id }}">
+    <i class="fa-regular fa-heart"></i>
+  </button>
+{% else %}
+  <button class="wishlist-fab" type="button" aria-label="Login to add to wishlist"
+          data-login-redirect="true" data-login-url="{% url 'userauths:login' %}">
+    <i class="fa-regular fa-heart"></i>
+  </button>
+{% endif %}
+
+        </div>
+      </div>
+
+      <!-- Thumbnails -->
+      <div class="thumbnail-gallery">
+        {% for image in product.gallery.all %}
+          <img src="{{ image.image.url }}" alt="Thumbnail" class="thumbnail">
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- INFO -->
+    <div class="product-info">
+      <p>{{ product.category }}</p>
+      <h2>{{ product.name }}</h2>
+
+      <!-- ⭐ Product average rating (robust, no boundary bugs) -->
+      <div class="rating">
+        {% with avg=product.average_rating|default:0 %}
+          {% for _ in "12345"|make_list %}
+            {% if forloop.counter <= avg %}
+              <i class="fas fa-star text-warning"></i>
+            {% else %}
+              <i class="far fa-star text-muted"></i>
+            {% endif %}
+          {% endfor %}
+        {% endwith %}
+        <span class="rev">({{ product.reviews.count|default:"0" }} Reviews)</span>
+      </div>
+
+      <p class="price">
+        <span class="old-price">₹{{ product.regular_price }}</span>
+        <span class="new-price">₹{{ product.price }}</span>
+        {% if product.stock > 0 %}
+          <span class="stock-status">In Stock</span>
+        {% endif %}
+      </p>
+
+      <p class="description">{{ product.description|safe|truncatechars:50 }}</p>
+
+      {% for variant in product.variants.all %}
+        {% if variant.name|lower == "color" and variant.variant_items.count > 0 %}
+          <div class="color-options">
+            <p>Color:</p>
+            {% for c in variant.variant_items.all %}
+              <span class="color-box"
+                    style="background-color: {{ c.content }};"
+                    data-color="{{ c.content }}"
+                    {% if c.image %}data-image="{{ c.image.url }}"{% endif %}
+                    onclick="changeProductImage(this)">
+              </span>
+            {% endfor %}
+          </div>
+          <input type="hidden" id="selected-color" name="color">
+        {% endif %}
+
+        {% if variant.name|lower == "size" and variant.variant_items.count > 0 %}
+          <div class="size-options">
+            <p>Size:</p>
+            {% for s in variant.variant_items.all %}
+              <button class="size-btn" data-size="{{ s.content }}">{{ s.content }}</button>
+            {% endfor %}
+          </div>
+          <input type="hidden" id="selected-size" name="size">
+        {% endif %}
+      {% endfor %}
+
+      <div class="cart-actions">
+        <select id="quantity-select">
+          {% for q in product_stock_range %}
+            <option value="{{ q }}">{{ q }}</option>
+          {% endfor %}
+        </select>
+
+       {% if user.is_authenticated %}
+  <button class="add-to-cart" data-product-id="{{ product.id }}">
+    <i class="fas fa-shopping-cart"></i> Add to Cart
+  </button>
+  <button id="main-wishlist-btn" class="wishlist-btn2" data-product-id="{{ product.id }}">
+    <i class="fas fa-heart{% if product.id in wishlist_ids %} text-danger{% endif %}"></i>
+  </button>
+{% else %}
+  <button class="add-to-cart" type="button"
+          data-login-redirect="true" data-login-url="{% url 'userauths:login' %}">
+    <i class="fas fa-shopping-cart"></i> Add to Cart
+  </button>
+  <button id="main-wishlist-btn" class="wishlist-btn2" type="button"
+          data-login-redirect="true" data-login-url="{% url 'userauths:login' %}">
+    <i class="fas fa-heart"></i>
+  </button>
+{% endif %}
+
+      </div>
+
+      <div class="social-share">
+        <p>Share:</p>
+        <a href="https://wa.me/?text={{ request.build_absolute_uri }}" target="_blank" title="Share on WhatsApp" style="text-decoration:none" class="wats">
+          <i class="fab fa-whatsapp"></i>
+        </a>
+        <a href="https://www.instagram.com/" target="_blank" title="Share on Instagram" style="text-decoration:none">
+          <i class="fab fa-instagram"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Anchor-style tab links -->
+  <div class="product-tabs">
+    <a href="#description" class="tab">DESCRIPTION</a>
+    <a href="#additional" class="tab">ADDITIONAL INFORMATION</a>
+    <a href="#reviews" class="tab">REVIEWS</a>
+  </div>
+
+  <!-- Always visible sections -->
+  <div id="description" class="tab-section">
+    <h3>Description</h3>
+    <p>{{ product.description|safe }}</p>
+  </div>
+
+  <div id="additional" class="tab-section">
+    <h3>Additional Information</h3>
+    <table class="table-des">
+      {% for variant in product.variants.all %}
+        {% if variant.name|lower == "specifications" %}
+          {% for s in variant.variant_items.all %}
+            <tr>
+              <td>{{ s.title }}</td>
+              <td>{{ s.content }}</td>
+            </tr>
+          {% endfor %}
+        {% endif %}
+      {% endfor %}
+    </table>
+  </div>
+
+  <!-- ⭐ Reviews list -->
+  <div id="reviews" class="tab-section">
+    <h3>Reviews</h3>
+    {% for r in product.reviews.all %}
+      <h5>{{ r.user.username|title }}</h5>
+
+      <div class="rating" style="margin:4px 0;">
+        {% with rr=r.rating|add:'0' %}
+          {% for _ in "12345"|make_list %}
+            {% if forloop.counter <= rr %}
+              <i class="fas fa-star text-warning"></i>
+            {% else %}
+              <i class="far fa-star text-muted"></i>
+            {% endif %}
+          {% endfor %}
+        {% endwith %}
+        <span style="font-size:12px;color:#666;margin-left:6px;">{{ r.date|date:"d M, Y" }}</span>
+      </div>
+
+      <p style="padding-bottom: 20px;">{{ r.review }}</p>
+    {% empty %}
+      <p>No reviews yet.</p>
+    {% endfor %}
+  </div>
+
+  <!-- Related Products -->
+  <div class="related-products-wrapper">
+    <h2 class="related-title">Related Products</h2>
+    <div class="related-products">
+      {% for p in related_product %}
+        <div class="product-card">
+          <div class="imgb">
+            <a href="{% url 'store:product_detail' p.slug %}">
+              <img src="{{ p.image.url }}" alt="{{ p.name }}">
+            </a>
+          </div>
+          <div class="details">
+            <p style="text-align:left; font-size: 12px; color: #4a4949; padding-left: 3px; margin: 6px 6px;">
+              {{ p.category.title }}
+            </p>
+            <p class="name">
+              <a href="{% url 'store:product_detail' p.slug %}" style="text-decoration:none; color:black; font-size: 14px;">{{ p.name }}</a>
+            </p>
+
+            <!-- ⭐ Stars for each related product -->
+            <div class="stars" style="font-size: 8px;">
+              {% with avg=p.average_rating|default:0 %}
+                {% for _ in "12345"|make_list %}
+                  {% if forloop.counter <= avg %}
+                    <i class="fas fa-star text-warning"></i>
+                  {% else %}
+                    <i class="far fa-star text-muted"></i>
+                  {% endif %}
+                {% endfor %}
+              {% endwith %}
+            </div>
+
+            <p class="price" style="color:black">₹{{ p.price }}</p>
+            <div class="actions">
+             {% if user.is_authenticated %}
+  <button class="add-to-cart" data-product-id="{{ p.id }}">
+    <i class="fas fa-shopping-cart"></i> Add to cart
+  </button>
+  <button class="wishlist-btn2" data-product-id="{{ p.id }}">
+    <i class="fas fa-heart{% if p.id in wishlist_ids %} text-danger{% endif %}"></i>
+  </button>
+{% else %}
+  <button class="add-to-cart" type="button"
+          data-login-redirect="true" data-login-url="{% url 'userauths:login' %}">
+    <i class="fas fa-shopping-cart"></i> Add to cart
+  </button>
+  <button class="wishlist-btn2" type="button"
+          data-login-redirect="true" data-login-url="{% url 'userauths:login' %}">
+    <i class="fas fa-heart"></i>
+  </button>
+{% endif %}
+
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <script>
+  // color chip -> swap main image (unchanged)
+  function changeProductImage(element) {
+    const newImage = element.getAttribute('data-image');
+    const mainImage = document.getElementById('main-product-image');
+    if (newImage && mainImage) {
+      mainImage.src = newImage;
+    }
+  }
+
+  /*
+    1) GLOBAL GUARD for guests:
+       If an element has data-login-redirect="true", redirect to login
+       BEFORE any other click handlers see the event (capture phase).
+  */
+  document.addEventListener('click', function (e) {
+    const el = e.target.closest('[data-login-redirect="true"]');
+    if (!el) return;
+    e.preventDefault();
+    e.stopImmediatePropagation(); // block other handlers (the ones that show "Product ID is missing!")
+    const url = el.getAttribute('data-login-url') || "{% url 'userauths:login' %}";
+    window.location.href = url;
+  }, true); // capture phase
+
+  /*
+    2) Floating heart -> trigger main wishlist button for logged-in users.
+       If guest, redirect to login instead.
+  */
+  document.addEventListener('click', (e) => {
+    const fab = e.target.closest('.wishlist-fab');
+    if (!fab) return;
+
+    // If floating heart itself is guest-mode
+    if (fab.dataset.loginRedirect === "true") {
+      const url = fab.dataset.loginUrl || "{% url 'userauths:login' %}";
+      window.location.href = url;
+      return;
+    }
+
+    const mainBtn = document.getElementById('main-wishlist-btn');
+    if (!mainBtn) return;
+
+    // If main wishlist button is guest-mode
+    if (mainBtn.dataset.loginRedirect === "true") {
+      const url = mainBtn.dataset.loginUrl || "{% url 'userauths:login' %}";
+      window.location.href = url;
+      return;
+    }
+
+    // Logged-in: reuse existing wishlist logic
+    mainBtn.click();
+
+    // Optional visual toggle between outline/solid
+    const icon = fab.querySelector('i');
+    if (icon) {
+      icon.classList.toggle('fa-regular');
+      icon.classList.toggle('fa-solid');
+    }
+  });
+</script>
+
+</div>
+{% endblock %}

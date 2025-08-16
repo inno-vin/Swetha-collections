@@ -1,0 +1,138 @@
+{% if not product.average_rating %}
+<i class = "fas fa-star text-warning"></i>
+{% elif product.average_rating > 0 and product.average_rating < 2 %}
+<i class = "fas fa-star text-warning"></i>
+{% elif product.average_rating > 1 and product.average_rating < 3 %}
+<i class = "fas fa-star text-warning"></i>
+<i class = "fas fa-star text-warning"></i>
+{% elif product.average_rating > 2 and product.average_rating < 4 %}
+<i class = "fas fa-star text-warning"></i>
+<i class = "fas fa-star text-warning"></i>
+<i class = "fas fa-star text-warning"></i>
+{% elif product.average_rating > 3 and product.average_rating < 5 %}
+<i class = "fas fa-star text-warning"></i>
+<i class = "fas fa-star text-warning"></i>
+<i class = "fas fa-star text-warning"></i>
+<i class = "fas fa-star text-warning"></i>
+{% elif product.average_rating > 4  %}
+<i class = "fas fa-star text-warning"></i>
+<i class = "fas fa-star text-warning"></i>
+<i class = "fas fa-star text-warning"></i>
+<i class = "fas fa-star text-warning"></i>
+<i class = "fas fa-star text-warning"></i>
+{% endif %}
+
+
+
+
+def add_to_cart(request):
+
+    id = request.GET.get("id")
+
+    qty = request.GET.get("qty")
+
+    color = request.GET.get("color")
+
+    size = request.GET.get("size")
+
+    cart_id = request.GET.get("cart_id")
+
+
+
+    request.session['cart_id'] = cart_id
+
+
+
+    if not id or not qty or not cart_id:
+
+        return JsonResponse({"error": "No id, qty, or cart_id"}, status=400)
+
+
+
+    try:
+
+        product = store_models.Product.objects.get(status="Published", id=id)
+
+    except store_models.Product.DoesNotExist:
+
+        return JsonResponse({"error": "Product not found"}, status=404)
+
+
+
+    if int(qty) > product.stock:
+
+        return JsonResponse({"error": "Qty exceeds current stock amount"}, status=400)
+
+
+
+    existing_cart_item = store_models.Cart.objects.filter(cart_id=cart_id, product=product).first()
+
+
+
+    if not existing_cart_item:
+
+            cart = store_models.Cart()
+
+            cart.product = product
+
+            cart.qty = qty
+
+            cart.price = product.price
+
+            cart.color = color
+
+            cart.size = size
+
+            cart.sub_total = Decimal(product.price) * Decimal(qty)
+
+            cart.shipping = Decimal(product.shipping) * Decimal(qty)
+
+            cart.total = cart.sub_total + cart.shipping
+
+            cart.user = request.user if request.user.is_authenticated else None
+
+            cart.cart_id = cart_id
+
+            cart.save()
+
+            message = "Item added to cart"
+
+        # else:
+
+        #   def add_to_cart(request):
+
+        # cart.user = request.user if request.user.is_authenticated else None
+
+        # cart.cart_id = cart_id
+
+        # cart.save()
+
+
+
+        # message = "Item added to cart"
+
+    else:
+
+            existing_cart_item.product = product
+
+            existing_cart_item.qty = qty
+
+            existing_cart_item.price = product.price
+
+            existing_cart_item.color = color
+
+            existing_cart_item.size = size
+
+            existing_cart_item.sub_total = Decimal(product.price) * Decimal(qty)
+
+            existing_cart_item.shipping = Decimal(product.shipping) * Decimal(qty)
+
+            existing_cart_item.total = existing_cart_item.sub_total + existing_cart_item.shipping
+
+            existing_cart_item.user = request.user if request.user.is_authenticated else None
+
+            existing_cart_item.cart_id = cart_id
+
+            existing_cart_item.save()
+
+            message = "Item added to cart"

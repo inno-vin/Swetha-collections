@@ -1,0 +1,279 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head >
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{% endblock %}</title>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="{% static 'index.css' %}">
+  <link rel="stylesheet" href="{% static 'base.css' %}">
+  <link rel="stylesheet" href="{% static 'cart.css' %}">
+  <link rel="stylesheet" href="{% static 'my_orders.css' %}">
+  <link rel="stylesheet" href="{% static 'login.css' %}">
+   <link rel="stylesheet" href="{% static 'order-success.css' %}">
+  <link rel="stylesheet" href="{% static 'wishlist.css' %}">
+  <link rel="stylesheet" href="{% static 'shop.css' %}">
+  <link rel="stylesheet" href="{% static 'product_details.css' %}"> 
+  <link rel="stylesheet" href="{% static 'search.css' %}">
+  <link rel="stylesheet" href="{% static 'checkout.css' %}">
+   <link rel="stylesheet" href="{% static 'about.css' %}">
+  <link rel="stylesheet" href="{% static 'account.css' %}">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="icon" type="image/x-icon" href="{% static 'favicon.ico' %}">
+</head>
+
+<body style="background: linear-gradient(135deg, #f5f0ff, #ffffff);" data-logged-in="{{ user.is_authenticated|yesno:'true,false' }}"
+  data-login-url="{% url 'userauths:login' %}">
+  <!-- Navbar -->
+<header class="navbar">
+  <div class="logo">Swetha<span>Collections</span></div>
+
+  <!-- Hamburger menu icon for mobile -->
+  <div class="menu-icon" id="menuIcon">
+    <i class="fas fa-bars"></i>
+  </div>
+
+  <!-- Navigation Links -->
+  <nav id="navLinks">
+  <div class="drawer-brand">
+  <img class="drawer-logo" src="{% static 'img/logo-sc.webp' %}" alt="Swetha Collections">
+  <div class=" drawer-title">Swetha<span style="color:#ccccff;">Collections</span></div>
+</div>
+
+    <ul>
+      <li><a href="{% url 'store:index' %}"><i class="fas fa-home"></i> Home</a></li>
+      <li><a href="{% url 'store:shop' %}"><i class="fas fa-shopping-bag"></i> Shop</a></li>
+      <li><a href="{% url 'userauths:account' %}"><i class="fas fa-user"></i> My Account</a></li>
+      <li><a href="{% url 'store:about' %}"><i class="fas fa-list-ul"></i> About us</a></li>
+      {% if not request.user.is_authenticated %}
+  <!-- Mobile-only auth links -->
+  <li class="mobile-only"><a href="/auth/login/"><i class="fas fa-sign-in-alt"></i> Sign In</a></li>
+  <li class="mobile-only"><a href="/auth/register/"><i class="fas fa-user-plus"></i> Sign Up</a></li>
+{% else %}
+  <!-- Mobile-only logout -->
+  <li class="mobile-only"><a href="{% url 'userauths:logout' %}"><i class="fas fa-right-from-bracket"></i> Logout</a></li>
+{% endif %}
+
+    </ul>
+  </nav>
+<div id="navBackdrop"></div>
+
+  <!-- Buttons (Wishlist, Cart, Auth) -->
+  <div class="nav-buttons">
+    <a href="{% url 'userauths:account' %}?tab=wishlist" style="color:white">
+      <i class="fas fa-heart"></i>
+      <span class="wishlist-count">{{ wishlist_count|default:0 }}</span>
+    </a>
+
+    <a href="{% url 'store:cart' %}" class="cart-link">
+      <i class="fas fa-shopping-cart"></i>
+      <span class="cart-count">
+        {% if request.user.is_authenticated %}
+          {% with total_qty=0 %}
+            {% for item in request.user.cart_set.all %}
+              {% with total_qty=total_qty|add:item.qty %}{% endwith %}
+            {% endfor %}
+            {{ total_qty }}
+          {% endwith %}
+        {% else %}
+          0
+        {% endif %}
+      </span>
+    </a>
+
+    {% if not request.user.is_authenticated %}
+      <a href="/auth/login/" class="sign-in">Sign In</a>
+      <a href="/auth/register/" class="sign-up">Sign Up</a>
+    {% else %}
+      <a href="{% url 'userauths:logout' %}" class="sign-out" style="text-decoration:none; color:white;">Logout</a>
+    {% endif %}
+    <!-- Mobile-only Account button (hidden on desktop via CSS) -->
+<button id="accountIcon" class="account-mobile-btn" aria-label="Account">
+  <i class="fas fa-user"></i>
+</button>
+
+  </div>
+</header>
+
+
+  {% block content %}{% endblock %}
+
+<!-- Right-side Account Drawer (mobile only) -->
+<div id="accountDrawer" class="account-drawer" aria-hidden="true">
+  <div class="drawer-header drawer-profile">
+    <div class="drawer-avatar">
+      {% if profile and profile.avatar %}
+        <img src="{{ profile.avatar.url }}" alt="Avatar">
+      {% else %}
+        <img src="{% static 'img/default-avatar.png' %}" alt="Avatar">
+      {% endif %}
+    </div>
+    <div class="drawer-user">
+      <div class="drawer-name">{{ user.first_name|default:user.username }}</div>
+      <div class="drawer-id">Customer ID: #{{ user.id }}</div>
+    </div>
+    <button class="drawer-close" aria-label="Close account menu">&times;</button>
+  </div>
+
+  <ul class="drawer-menu">
+    <li><a href="#" class="drawer-link" data-target="dashboard"><i class="fa-solid fa-box"></i> Dashboard</a></li>
+    <li><a href="#" class="drawer-link" data-target="orders"><i class="fa-solid fa-box"></i> Orders</a></li>
+    <li><a href="#" class="drawer-link" data-target="wishlist"><i class="fas fa-heart"></i>Wishlist</a></li>
+    <li><a href="#" class="drawer-link" data-target="address"><i class="fa-solid fa-house"></i> Address</a></li>
+    <li><a href="#" class="drawer-link" data-target="profile"><i class="fa-regular fa-user"></i>  Profile</a></li>
+  </ul>
+
+
+
+  <div class="drawer-footer">
+    <a href="{% url 'userauths:account' %}" class="drawer-primary">Go to Account</a>
+  </div>
+</div>
+<div id="drawerBackdrop" class="drawer-backdrop" aria-hidden="true"></div>
+
+  
+  <!-- Scripts -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="{% static 'product_details.js' %}"></script>
+  <script src="{% static 'index.js' %}"></script>
+  <script src="{% static 'cart.js' %}?v=2"></script>
+  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  <script>
+  console.log("🔍 Inline script reached");
+</script>
+<script src="{% static 'account.js' %}" defer></script>
+
+<script>
+/* =========================
+   MOBILE LEFT NAV DRAWER
+   ========================= */
+const menuIcon    = document.getElementById("menuIcon");           // your hamburger button
+const navDrawer   = document.querySelector(".navbar nav");          // existing <nav>
+const navBackdrop = document.getElementById("navBackdrop");         // <-- make sure this div exists right after <nav>
+
+/* Open/Close helpers */
+function openNav() {
+  if (navDrawer)   navDrawer.classList.add("open");
+  if (navBackdrop) navBackdrop.classList.add("visible");
+  document.body.style.overflow = "hidden";
+}
+function closeNav() {
+  if (navDrawer)   navDrawer.classList.remove("open");
+  if (navBackdrop) navBackdrop.classList.remove("visible");
+  document.body.style.overflow = "";
+}
+
+/* Triggers */
+if (menuIcon)    menuIcon.addEventListener("click", openNav);
+if (navBackdrop) navBackdrop.addEventListener("click", closeNav);
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeNav(); });
+
+/* Close the drawer when a nav link is tapped (mobile) */
+document.querySelectorAll(".navbar nav a").forEach(a => {
+  a.addEventListener("click", closeNav);
+});
+
+
+/* =========================
+   ACCOUNT DRAWER (RIGHT)
+   (your original logic)
+   ========================= */
+const accountIcon    = document.getElementById("accountIcon");
+const accountDrawer  = document.getElementById("accountDrawer");
+const drawerBackdrop = document.getElementById("drawerBackdrop");
+const drawerCloseBtn = accountDrawer ? accountDrawer.querySelector(".drawer-close") : null;
+
+function openDrawer(){
+  if (!accountDrawer || !drawerBackdrop) return;
+  accountDrawer.classList.add("open");
+  drawerBackdrop.classList.add("visible");
+  document.body.style.overflow = "hidden";
+}
+function closeDrawer(){
+  if (!accountDrawer || !drawerBackdrop) return;
+  accountDrawer.classList.remove("open");
+  drawerBackdrop.classList.remove("visible");
+  document.body.style.overflow = "";
+}
+
+if (accountIcon)    accountIcon.addEventListener("click", openDrawer);
+if (drawerCloseBtn) drawerCloseBtn.addEventListener("click", closeDrawer);
+if (drawerBackdrop) drawerBackdrop.addEventListener("click", closeDrawer);
+document.addEventListener("keydown", (e)=>{ if(e.key==="Escape") closeDrawer(); });
+
+/* Switch account tabs from drawer links (if we're on the account page) */
+document.querySelectorAll(".drawer-link").forEach(a=>{
+  a.addEventListener("click", (e)=>{
+    e.preventDefault();
+    const target = a.getAttribute("data-target");
+
+    // If we're on the account page with in-page tabs, trigger that tab
+    const tabLink  = document.querySelector('.sidebar .nav-link[data-target="'+target+'"]');
+    const tabPanel = document.getElementById(target);
+
+    if (tabLink && tabPanel) {
+      document.querySelectorAll('.sidebar .nav-link').forEach(l=>l.classList.remove('active'));
+      tabLink.classList.add('active');
+      document.querySelectorAll('.tab').forEach(p=>p.classList.remove('active'));
+      tabPanel.classList.add('active');
+
+      closeDrawer();
+      tabPanel.scrollIntoView({behavior: "smooth", block: "start"});
+    } else {
+      // Not on account page: navigate to it with a query param
+      window.location.href = "{% url 'userauths:account' %}?tab=" + encodeURIComponent(target);
+    }
+  });
+});
+</script>
+
+
+<footer class="site-footer" style="margin-top: 60px; ">
+  <div class="footer-container">
+    
+    <!-- Logo + Description -->
+    <div class="footer-section">
+      <div class="footer-logo">Swetha Collections</div>
+      <div class="footer-text">
+        Celebrating Indian elegance & empowering women through timeless fashion.
+      </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="footer-section exp">
+      <div class="footer-title">Explore</div>
+      <ul class="footer-links">
+        <li><a href="/home">Home page</a></li>
+        <li><a href="/about">About us</a></li>
+        {% comment %} <li><a href="#">Contact</a></li>
+        <li><a href="#">Privacy Policy</a></li> {% endcomment %}
+      </ul>
+    </div>
+
+    <!-- Contact -->
+    <div class="footer-section cont">
+      <div class="footer-title">Contact Us</div>
+      <div class="footer-contact">
+        <p>Email: <a href="mailto:swethacollections48@gmail.com">swethacollections48@gmail.com</a></p>
+        <p>Phone: <a href="https://wa.me/916304935699" target="_blank">+91 6304935699</a></p>
+        <div class="social-icons">
+          <a href="https://wa.me/916304935699" target="_blank"><i class="fab fa-whatsapp"></i></a>
+          <a href="https://www.instagram.com/swethacollections719?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank"><i class="fab fa-instagram"></i></a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer-bottom">
+    © 2025 Swetha Collections. All rights reserved.
+  </div>
+</footer>
+
+
+</body>
+</html>

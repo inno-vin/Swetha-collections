@@ -1,0 +1,84 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="shop-container">
+
+  <!-- Sidebar Filters (unchanged on desktop) -->
+  <aside id="filters" class="filter-sidebar" style="position: sticky;">
+
+    <h4>Categories</h4>
+    <ul>
+      {% for category in categories %}
+        <li><a href="?category={{ category.id }}">{{ category.title }}</a></li>
+      {% endfor %}
+    </ul>
+
+    <div class="filter-section-title">Filters</div>
+   <form method="get" action="{{ request.path }}">
+
+      {% if request.GET.category %}
+        <input type="hidden" name="category" value="{{ request.GET.category }}">
+      {% endif %}
+
+      <div class="form-group">
+        <label for="min_price">Min Price</label>
+        <input type="number" name="min_price" value="{{ request.GET.min_price }}">
+      </div>
+
+      <div class="form-group">
+        <label for="max_price">Max Price</label>
+        <input type="number" name="max_price" value="{{ request.GET.max_price }}">
+      </div>
+
+      <div class="form-group">
+        <label for="color">Color</label>
+        <select name="color">
+          <option value="">Select Color</option>
+          {% for c in colors %}
+            <option value="{{ c }}" {% if request.GET.color == c %}selected{% endif %}>{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="size">Size</label>
+        <select name="size">
+          <option value="">Select Size</option>
+          {% for s in sizes %}
+            <option value="{{ s }}" {% if request.GET.size == s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <button type="submit" class="btn">Apply Filters</button>
+    </form>
+  </aside>
+
+  <!-- Backdrop must be the NEXT sibling so :target + works -->
+  <a href="#" class="filter-backdrop" aria-label="Close filters"></a>
+
+  <!-- Floating buttons (same icon; open/close via :target) -->
+  <a href="#filters" class="floating-filter-btn floating-filter-btn--open" aria-label="Open filters">Filter</a>
+  <a href="#" class="floating-filter-btn floating-filter-btn--close" aria-label="Close filters">Filter</a>
+
+  <div class="product-container">
+    <!-- Product Grid -->
+    <section class="product-grid">
+      {% for product in products %}
+        <div class="product-card">
+          {% if product.variant_image_url %}
+            <img src="{{ product.variant_image_url }}" alt="{{ product.name }}">
+          {% else %}
+            <img src="{{ product.image.url }}" alt="{{ product.name }}">
+          {% endif %}
+          <h5>{{ product.name }}</h5>
+          <p class="price">₹{{ product.price }}</p>
+          <a href="{% url 'store:product_detail' product.slug %}" class="add-to-cart-btn">View Details</a>
+        </div>
+      {% endfor %}
+    </section>
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends "store/base.html" %}
+{% block content %}
+<h2 style="text-align: center; ; padding-top:50px; margin-bottom:0px;">Search Results for "{{ query }}"</h2>
+ <section class="products">
+{% if products %}
+<div class="product-grid">
+  {% for p in products %}
+  <div class="product-card">
+    <div class="imgb">
+      <a href="{% url 'store:product_detail' p.slug %}">
+        <img src="{{ p.image.url }}" alt="{{ p.name }}">
+      </a>
+    </div>
+    <div class="details">
+      <p style="text-align:left; font-size: 12px;color: #4a4949;padding-left: 0px;   margin: 6px 6px; font-family: Arial, Helvetica, sans-serif;">
+        {{ p.category.title }}
+      </p>
+
+      <p class="name">
+        <a href="{% url 'store:product_detail' p.slug %}"  style="text-decoration:none; color:black;  font-size: 14px;">{{ p.name }}</a>
+      </p>
+
+      <div class="stars" style="  font-size: 8px;">
+        {% if not p.average_rating %}
+          <i class="fas fa-star text-warning"></i>
+        {% elif p.average_rating > 0 and p.average_rating < 2 %}
+          <i class="fas fa-star text-warning"></i>
+        {% elif p.average_rating > 1 and p.average_rating < 3 %}
+          <i class="fas fa-star text-warning"></i>
+          <i class="fas fa-star text-warning"></i>
+        {% elif p.average_rating > 2 and p.average_rating < 4 %}
+          <i class="fas fa-star text-warning"></i>
+          <i class="fas fa-star text-warning"></i>
+          <i class="fas fa-star text-warning"></i>
+        {% elif p.average_rating > 3 and p.average_rating < 5 %}
+          <i class="fas fa-star text-warning"></i>
+          <i class="fas fa-star text-warning"></i>
+          <i class="fas fa-star text-warning"></i>
+          <i class="fas fa-star text-warning"></i>
+        {% elif p.average_rating > 4 %}
+          <i class="fas fa-star text-warning"></i>
+          <i class="fas fa-star text-warning"></i>
+          <i class="fas fa-star text-warning"></i>
+          <i class="fas fa-star text-warning"></i>
+          <i class="fas fa-star text-warning"></i>
+        {% endif %}
+      </div>
+
+      <p class="price" style="color:black">₹{{ p.price }}</p>
+
+      <div class="actions">
+        {% if user.is_authenticated %}
+          <button class="add-to-cart" data-product-id="{{ p.id }}">
+            <i class="fas fa-shopping-cart"></i> Add to cart
+          </button>
+          <button class="wishlist-btn" data-product-id="{{ p.id }}">
+            <i class="fas fa-heart{% if p.id in wishlist_ids %} text-danger{% endif %}"></i>
+          </button>
+        {% else %}
+          {# keep same classes/styles; just mark for redirect and don't send product-id #}
+          <button class="add-to-cart" type="button"
+                  data-login-redirect="true" data-login-url="{% url 'userauths:login' %}">
+            <i class="fas fa-shopping-cart"></i> Add to cart
+          </button>
+          <button class="wishlist-btn" type="button"
+                  data-login-redirect="true" data-login-url="{% url 'userauths:login' %}">
+            <i class="fas fa-heart"></i>
+          </button>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+</section>
+{% else %}
+<p style="text-align: center; color: gray;">No products found matching your search.</p>
+{% endif %}
+
+{# tiny guard so guest clicks redirect before any other JS runs; no CSS touched #}
+<script>
+  document.addEventListener('click', function (e) {
+    const el = e.target.closest('[data-login-redirect="true"]');
+    if (!el) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    const url = el.getAttribute('data-login-url') || "{% url 'userauths:login' %}";
+    window.location.href = url;
+  }, true);
+</script>
+{% endblock %}

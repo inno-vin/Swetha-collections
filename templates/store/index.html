@@ -1,0 +1,160 @@
+{% extends "store/base.html" %}
+
+{% load static %}
+
+{% block title %}
+ main_page
+{% endblock %}
+
+{% block content %}
+
+ <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+    
+
+   <!-- Hero Section -->
+<div class="up">
+<section class="hero">
+ <!-- Slideshow using category images -->
+    <div class="hero-image">
+        <div class="slideshow-container">
+            {% for cate in categories %}
+                <div class="mySlides fade">
+                    {% if cate.image %}
+                        <img src="{{ cate.image.url }}" alt="{{ cate.title }}">
+                    {% else %}
+                        <img src="/static/default-image.jpg" alt="Default Category">
+                    {% endif %}
+                    <div class="text">{{ cate.title }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="hero-text">
+    <p class="discount">Style That Speaks Culture!</p>
+    <h1>Celebrate Tradition with <span class="highlight">Elegant Fashion</span> & Authentic Vibes</h1>
+    <p class="description">Welcome to SwethaCollections – explore beautifully crafted chudidhars, graceful lehengas, and vibrant saris designed for timeless moments and lasting impressions.</p>
+
+    <form action="{% url 'store:search' %}" method="get" class="search-bar">
+    <input type="text" name="q" placeholder="Search ethnic styles..." required style="width:465px;">
+    <button type="submit"  class="sb" style=" border-radius: 100px;  padding: 15px 20px;margin-bottom:0px;margin-top:0px;"><i class="fas fa-search"></i></button>
+</form>
+
+
+    <p class="terms">Every thread tells a story. Find yours.</p>
+</div>
+
+
+   
+</section>
+</div>
+
+    
+    <!-- Trending Categories Section -->
+
+<section class="trending-categories">
+    <h2>Trending Categories <span class="emoji">🔷</span></h2>
+    <div class="categories-container" style="display: flex; gap: 20px; flex-wrap: wrap;">
+        {% for cate in categories %}
+           <a href="{% url 'store:shop' %}?category={{ cate.cid }}" style="text-decoration: none; color: inherit;">
+                <div class="category" style="text-align: center;">
+                    {% if cate.image %}
+                        <img src="{{ cate.image.url }}" alt="{{ cate.title }}" style="width: 100px; height: 100px; border-radius: 50%;">
+                    {% else %}
+                        <img src="/static/default-image.jpg" alt="Default Image" style="width: 100px; height: 100px; border-radius: 50%;">
+                    {% endif %}
+                    <p style="margin-top: 10px;">{{ cate.title }}</p>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+</section>
+
+
+ <!-- Product Section -->
+ <section class="products">
+    <h2>Popular Products <span>🔥</span></h2>
+    <div class="product-grid">
+
+       
+        <!-- Products -->
+
+    {% for p in products %} 
+         
+        <div class="product-card">
+            <div class="imgb">
+           <a href="{% url 'store:product_detail' p.slug %}"> <img src="{{ p.image.url }}" alt="Beats Speaker"></a>  
+        </div>
+        <div class="details">
+            <p style="text-align:left; font-size: 12px;color: #4a4949;padding-left: 0px;   margin: 6px 6px; font-family: Arial, Helvetica, sans-serif; ">{{ p.category.title }}</p>
+        
+            <p class="name">
+                <a href="{% url 'store:product_detail' p.slug %}" style="text-decoration:none; color:black;  font-size: 14px;">{{ p.name }} </a> </p>
+            <div class="stars" style="  font-size: 8px;">
+                {% if not p.average_rating %}
+                  <i class = "fas fa-star text-warning"></i>
+                {% elif p.average_rating > 0 and p.average_rating < 2 %}
+                  <i class = "fas fa-star text-warning"></i>
+                {% elif p.average_rating > 1 and p.average_rating < 3 %}
+                  <i class = "fas fa-star text-warning"></i>
+                  <i class = "fas fa-star text-warning"></i>
+                {% elif p.average_rating > 2 and p.average_rating < 4 %}
+                <i class = "fas fa-star text-warning"></i>
+                <i class = "fas fa-star text-warning"></i>
+                <i class = "fas fa-star text-warning"></i>
+                {% elif p.average_rating > 3 and p.average_rating < 5 %}
+                <i class = "fas fa-star text-warning"></i>
+                <i class = "fas fa-star text-warning"></i>
+                <i class = "fas fa-star text-warning"></i>
+                <i class = "fas fa-star text-warning"></i>
+                {% elif p.average_rating > 4  %}
+                <i class = "fas fa-star text-warning"></i>
+                <i class = "fas fa-star text-warning"></i>
+                <i class = "fas fa-star text-warning"></i>
+                <i class = "fas fa-star text-warning"></i>
+                <i class = "fas fa-star text-warning"></i>
+                {% endif %}{{ p.average_rating }}
+                </div>
+            <p class="price" style="color:black">₹{{ p.price }}</p>
+           {% comment %} <div class="actions">
+  <button class="add-to-cart" data-product-id="{{ p.id }}">
+    <i class="fas fa-shopping-cart"></i> Add to cart
+  </button>
+  <button class="wishlist-btn" data-product-id="{{ p.id }}">
+  <i class="fas fa-heart{% if product.id in wishlist_ids %} text-danger{% endif %}"></i> 
+</button>
+
+
+   
+</div> {% endcomment %}
+
+<div class="actions">
+  {% if user.is_authenticated %}
+    <button class="add-to-cart" data-product-id="{{ p.id }}">
+      <i class="fas fa-shopping-cart"></i> Add to cart
+    </button>
+    <button class="wishlist-btn" data-product-id="{{ p.id }}">
+      <i class="fas fa-heart{% if p.id in wishlist_ids %} text-danger{% endif %}"></i>
+    </button>
+  {% else %}
+    {# Use guest-only classes so no JS handler runs #}
+    <a href="{% url 'userauths:login' %}" class="add-to-cart-guest" data-login-redirect="true">
+      <i class="fas fa-shopping-cart"></i> Add to cart
+    </a>
+    <a href="{% url 'userauths:login' %}" class="wishlist-btn-guest" data-login-redirect="true">
+      <i class="fas fa-heart"></i>
+    </a>
+  {% endif %}
+</div>
+
+
+
+            </div>
+        </div>
+    {% endfor %}
+
+    
+
+    </div>
+</section>
+
+{% endblock %}

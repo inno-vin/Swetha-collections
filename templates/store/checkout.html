@@ -1,0 +1,94 @@
+{% extends "store/base.html" %}
+{% block content %}
+<div class="container"style="margin-top:30px;">
+    <div class="checkout-wrapper"style="margin-top:0px;">
+        <h2 class="checkout-title">🧾 Checkout</h2>
+
+        <div class="checkout-summary">
+            <div class="checkout-items">
+                {% for item in cart_items %}
+                    <div class="checkout-item">
+                        <img src="{% if item.image and item.image.name %}{{ item.image.url }}{% elif item.product.image and item.product.image.name %}{{ item.product.image.url }}{% else %}/static/images/placeholder.jpg{% endif %}" alt="{{ item.product.name }}">
+
+                        <div class="checkout-item-details">
+                            <h4>{{ item.product.name }}</h4>
+                            <p>Qty: {{ item.qty }} × ₹{{ item.price }} = ₹{{ item.sub_total }}</p>
+                            {% if item.size %}<p>Size: {{ item.size }}</p>{% endif %}
+                            {% if item.color %}<p>Color: {{ item.color }}</p>{% endif %}
+                            <p>Price: ₹{{ item.sub_total }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="checkout-totals">
+                <p>Subtotal: <strong>₹{{ subtotal }}</strong></p>
+                <p>Shipping: <strong>₹{{ shipping_total }}</strong></p>
+                <p class="total">Total: <strong>₹{{ grand_total }}</strong></p>
+            </div>
+
+            <!-- ✅ Single, unified form -->
+            <form method="POST" action="{% url 'store:checkout' %}">
+                {% csrf_token %}
+
+                <h3 style="padding-top:10px;padding-bottom:10px;">Shipping Address</h3>
+
+                {% if profile.address %}
+                    <div class="delivery-summary">
+                        <p>{{ profile.full_name }}</p>
+                        <p>{{ profile.mobile }}</p>
+                        <p>{{ profile.address }}</p>
+                    </div>
+                {% else %}
+                    <label>Full Name</label>
+                    <input type="text" name="full_name" required>
+
+                    <label>Mobile Number</label>
+                    <input type="text" name="mobile" required>
+
+                    <label>Address</label>
+                    <input type="text" name="address" required>
+
+                    <label>City</label>
+                    <input type="text" name="city" required>
+
+                    <label>State</label>
+                    <input type="text" name="state" required>
+
+                    <label>Postal Code</label>
+                    <input type="text" name="postal_code" required>
+
+                    <label>Country</label>
+                    <input type="text" name="country" required>
+                {% endif %}
+
+                <br><br>
+                <label style="margin:0px;"><strong>Select Payment Method:</strong></label><br>
+                <select name="payment_method" required>
+                    {% comment %} <option value="COD">Cash on Delivery</option> {% endcomment %}
+                    <option value="Razorpay">Razorpay</option>
+                </select>
+
+                <br><br>
+                <button type="submit" class="checkout-place-btn">Place Order</button>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+{% if razorpay_order_id %}
+    <script src="https://checkout.razorpay.com/v1/checkout.js"
+        data-key="{{ razorpay_key }}"
+        data-amount="{{ amount }}"
+        data-currency="INR"
+        data-order_id="{{ razorpay_order_id }}"
+        data-buttontext="Pay with Razorpay"
+        data-name="Swetha Collections"
+        data-description="Order Payment"
+        data-prefill.name="{{ request.user.get_full_name }}"
+        data-prefill.email="{{ request.user.email }}"
+        data-theme.color="#F37254">
+    </script>
+{% endif %}
+{% endblock %}

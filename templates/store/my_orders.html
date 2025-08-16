@@ -1,0 +1,43 @@
+{% extends "store/base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container">
+    <h2 class="order-title">📦 My Orders</h2>
+
+    {% if orders %}
+        {% for order in orders %}
+        <div class="order-card">
+            <h3>Order ID: <strong>{{ order.order_id }}</strong></h3>
+            <p><strong>Status:</strong> {{ order.status }}</p>
+            <p><strong>Payment Method:</strong> {{ order.payment_method }}</p>
+            <p><strong>Payment Status:</strong> {{ order.payment_status }}</p>
+            <p><strong>Date:</strong> {{ order.date|date:"F j, Y, g:i a" }}</p>
+            <p><strong>Total:</strong> ₹{{ order.total }}</p>
+
+            <div class="order-items">
+                <strong>Items:</strong>
+                {% for item in order.items.all %}
+                <div class="order-item">
+                    
+
+                      <img src="{% if item.image and item.image.url %}{{ item.image.url }}{% else %}{{ item.product.image.url }}{% endif %}" alt="{{ item.product.name }}">
+
+
+
+
+
+                    <div>
+                        <p class="item-name">{{ item.product.name }}</p>
+                        <p>{{ item.qty }} × ₹{{ item.price }} = ₹{{ item.sub_total }}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p class="no-orders">You haven’t placed any orders yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

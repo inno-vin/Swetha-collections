@@ -1,0 +1,14 @@
+{% extends "store/base.html" %}
+{% block content %}
+{% load static %}
+<div class="container thankyou">
+  <h2> Thank you for your purchase!🎉</h2>
+  <p>Your order has been successfully placed.</p>
+  <p>We will process it shortly and send you the confirmation.</p>
+
+  <a href="{% url 'store:index' %}" class="btn btn-primary">
+    Continue Shopping
+  </a>
+</div>
+
+{% endblock %}
