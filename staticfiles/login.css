@@ -3,7 +3,6 @@ body, html {
     margin: 0;
     padding: 0;
     font-family: 'Segoe UI', sans-serif;
-    /* background: url("/static/images/login-bg.jpg") no-repeat center center fixed; */
     background-size: cover;
     min-height: 100vh;
 }
