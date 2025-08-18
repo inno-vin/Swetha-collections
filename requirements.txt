@@ -24,7 +24,7 @@ decorator==4.4.2
 defusedxml==0.7.1
 diff-match-patch==20230430
 dj-database-url==0.5.0
-dj-database-url>=2.2
+
 psycopg2-binary>=2.9
 
 Django==4.2
