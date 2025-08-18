@@ -10,7 +10,8 @@
     <h4>Categories</h4>
     <ul>
       {% for category in categories %}
-        <li><a href="?category={{ category.id }}">{{ category.title }}</a></li>
+       <li><a href="?category={{ category.cid }}">{{ category.title }}</a></li>
+
       {% endfor %}
     </ul>
 

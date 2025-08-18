@@ -438,9 +438,9 @@ def shop_view(request):
     categories = Category.objects.all()
     products = Product.objects.filter(status="Published")
 
-    category_id = request.GET.get('category')
-    if category_id:
-        products = products.filter(category_id=category_id)
+    category_cid = request.GET.get('category')
+    if category_cid:
+      products = products.filter(category__cid=category_cid)
 
     min_price = request.GET.get('min_price')
     max_price = request.GET.get('max_price')
