@@ -31,5 +31,7 @@ tzdata==2025.1
 uncompyle6==3.9.2
 urllib3==2.3.0
 wheel==0.45.1
+whitenoise==6.9.0
 xdis==6.1.1
+
 
