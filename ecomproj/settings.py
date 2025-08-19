@@ -27,7 +27,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-SECRET_KEY = os.environ.get("7+zay0pa1%9bk0h3p_w)nsiy01#c%^r=9z-sg2o!&1mwe22363", "fallback-secret-key")
+# SECRET_KEY = os.environ.get("7+zay0pa1%9bk0h3p_w)nsiy01#c%^r=9z-sg2o!&1mwe22363", "fallback-secret-key")
+SECRET_KEY = os.environ.get("SECRET_KEY", "fallback-secret-key")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
@@ -61,13 +62,10 @@ CLOUDINARY_URL = os.environ.get("CLOUDINARY_URL")
 
 # Cloudinary settings
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-STATICFILES_STORAGE = 'cloudinary_storage.storage.StaticHashedCloudinaryStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': 'dh3d4pwm4',   # from Cloudinary dashboard
-    'API_KEY': '876637172939391',       # from Cloudinary dashboard
-    'API_SECRET': 'NjteCh3Rk0uN--NGzf0jGnfPqwI',      # from Cloudinary dashboard
-}
+
+
 
 
 
