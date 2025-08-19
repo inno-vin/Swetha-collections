@@ -105,9 +105,100 @@ CKEDITOR_5_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 CKEDITOR_5_CONFIGS = {
     "default": {
         "toolbar": [
-            "heading", "|", "bold", "italic", "link",
-            "bulletedList", "numberedList", "blockQuote", "imageUpload"
+            "heading",
+            "|",
+            "bold",
+            "italic",
+            "underline",
+            "strikethrough",
+            "subscript",
+            "superscript",
+            "|",
+            "link",
+            "blockQuote",
+            "code",
+            "removeFormat",
+            "|",
+            "bulletedList",
+            "numberedList",
+            "todoList",
+            "|",
+            "insertImage",
+            "mediaEmbed",
+            "insertTable",
+            "|",
+            "fontSize",
+            "fontFamily",
+            "fontColor",
+            "fontBackgroundColor",
+            "|",
+            "sourceEditing",
         ],
+        "image": {
+            "toolbar": [
+                "imageTextAlternative",
+                "|",
+                "imageStyle:alignLeft",
+                "imageStyle:alignRight",
+                "imageStyle:alignCenter",
+                "imageStyle:side",
+                "|",
+                "toggleImageCaption",
+            ],
+            "styles": [
+                "full",
+                "side",
+                "alignLeft",
+                "alignRight",
+                "alignCenter",
+            ],
+        },
+        "table": {
+            "contentToolbar": [
+                "tableColumn",
+                "tableRow",
+                "mergeTableCells",
+                "tableProperties",
+                "tableCellProperties",
+            ],
+            "tableProperties": {
+                "borderColors": [
+                    "#FF5733", "#33FF57", "#3357FF", "#000000", "#FFFFFF"
+                ],
+                "backgroundColors": [
+                    "#FF5733", "#33FF57", "#3357FF", "#000000", "#FFFFFF"
+                ],
+            },
+            "tableCellProperties": {
+                "borderColors": [
+                    "#FF5733", "#33FF57", "#3357FF", "#000000", "#FFFFFF"
+                ],
+                "backgroundColors": [
+                    "#FF5733", "#33FF57", "#3357FF", "#000000", "#FFFFFF"
+                ],
+            },
+        },
+        "list": {
+            "properties": {
+                "styles": True,
+                "startIndex": True,
+                "reversed": True,
+            }
+        },
+        "heading": {
+            "options": [
+                {"model": "paragraph", "title": "Paragraph", "class": "ck-heading_paragraph"},
+                {"model": "heading1", "view": "h1", "title": "Heading 1", "class": "ck-heading_heading1"},
+                {"model": "heading2", "view": "h2", "title": "Heading 2", "class": "ck-heading_heading2"},
+                {"model": "heading3", "view": "h3", "title": "Heading 3", "class": "ck-heading_heading3"},
+            ]
+        },
+        "htmlSupport": {
+            "allow": [
+                {"name": "/.*/", "attributes": True, "classes": True, "styles": True}
+            ]
+        },
+        "language": {"ui": "en", "content": "en"},
     }
 }
 
