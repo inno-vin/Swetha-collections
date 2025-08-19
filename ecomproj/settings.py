@@ -61,7 +61,7 @@ import cloudinary_storage
 CLOUDINARY_URL = os.environ.get("CLOUDINARY_URL")
 
 # Cloudinary settings
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+DEFAULT_FILE_STORAGE = "cloudinary_storage.storage.MediaCloudinaryStorage"
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
@@ -362,3 +362,24 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'swethacollections48@gmail.com'   # Your Gmail
 EMAIL_HOST_PASSWORD = 'nhaqfrsrddidevad'            # Your Gmail app password
 DEFAULT_FROM_EMAIL = 'Swetha Collections <swethacollections48@gmail.com>'
+
+
+# settings.py
+
+
+# Make Cloudinary the default media storage
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    # If you also want Cloudinary for staticfiles, use:
+    # "staticfiles": {
+    #     "BACKEND": "cloudinary_storage.storage.StaticHashedCloudinaryStorage",
+    # }
+    # Or keep local staticfiles:
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
+
+# (Keep your existing MEDIA_URL/MEDIA_ROOT; they won't be used for Cloudinary media)
