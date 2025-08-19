@@ -50,7 +50,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (mainImage && clickedSrc) {
         mainImage.src = clickedSrc;
       }
-
       document.querySelectorAll(".thumbnail").forEach(t => t.classList.remove("active"));
       thumbnail.classList.add("active");
     });
@@ -60,7 +59,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (mainImage && hoverSrc) {
         mainImage.src = hoverSrc;
       }
-
       document.querySelectorAll(".thumbnail").forEach(t => t.classList.remove("active"));
       thumbnail.classList.add("active");
     });
@@ -147,11 +145,13 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .catch(error => console.error("❌ Add to cart error:", error));
     });
-      // --- Share/Copy via Instagram <a> (keeps your CSS) ---
+  });
+
+  // --- ✅ Instagram Share/Copy (outside add-to-cart) ---
   const igLink = document.getElementById("ig-share-link");
   const productUrl = igLink ? igLink.dataset.url : window.location.href;
+  const productName = typeof window.PRODUCT_NAME !== "undefined" ? window.PRODUCT_NAME : "{{ product.name|escapejs }}";
 
-  // Fallback toast if you haven't defined showToast elsewhere
   function _ensureToast() {
     if (typeof window.showToast === "function") return;
     let t = document.getElementById("share-toast");
@@ -161,12 +161,18 @@ document.addEventListener("DOMContentLoaded", function () {
       t.className = "share-toast";
       t.setAttribute("role", "status");
       t.setAttribute("aria-live", "polite");
+      t.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:rgba(0,0,0,.85);color:#fff;padding:8px 12px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:all .25s ease;z-index:9999;";
       document.body.appendChild(t);
     }
-    window.showToast = function (msg = "Link copied!", type = "info") {
-      t.textContent = msg;
-      t.classList.add("show");
-      setTimeout(() => t.classList.remove("show"), 1600);
+    window.showToast = function (msg = "Link copied!") {
+      const el = document.getElementById("share-toast");
+      el.textContent = msg;
+      el.style.opacity = "1";
+      el.style.transform = "translateX(-50%) translateY(0)";
+      setTimeout(() => {
+        el.style.opacity = "0";
+        el.style.transform = "translateX(-50%) translateY(20px)";
+      }, 1600);
     };
   }
 
@@ -184,10 +190,10 @@ document.addEventListener("DOMContentLoaded", function () {
         document.execCommand("copy");
         ta.remove();
       }
-      (window.showToast || (()=>{}))("Link copied!", "success");
+      (window.showToast || (()=>{}))("Link copied!");
     } catch (e) {
       console.error(e);
-      (window.showToast || (()=>{}))("Couldn't copy. Long-press to copy.", "error");
+      (window.showToast || (()=>{}))("Couldn't copy. Long-press to copy.");
     }
   }
 
@@ -195,69 +201,37 @@ document.addEventListener("DOMContentLoaded", function () {
     _ensureToast();
     igLink.addEventListener("click", async (e) => {
       e.preventDefault();
+
+      // 1) Mobile: native share sheet (user can pick Instagram)
       if (navigator.share) {
         try {
           await navigator.share({
-            title: "{{ product.name|escapejs }}",
+            title: productName,
             text: "Check this out:",
             url: productUrl
           });
           return;
         } catch (err) {
-          // fall through to copy
+          // user canceled or share failed; continue to copy + open IG
         }
       }
+
+      // 2) Copy link so user can paste in IG DM
       await _copyToClipboard(productUrl);
+
+      // 3) Try to open Instagram app DMs
+      let opened = false;
+      try {
+        const w = window.open("instagram://direct", "_blank");
+        if (w) opened = true;
+      } catch (_) {}
+
+      // 4) Fallback to Instagram web DMs
+      if (!opened) {
+        window.open("https://www.instagram.com/direct/new/", "_blank");
+      }
     });
   }
-
-  });
-
-  // ✅ Wishlist Button Handling
-document.querySelectorAll(".wishlist-btn, .wishlist-btn2")
-.forEach(button => {
-    button.addEventListener("click", function () {
-      const productId = this.dataset.productId;
-      const csrfToken = getCookie("csrftoken");
-
-      fetch(`/wishlist/add/${productId}/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken
-        },
-        credentials: 'same-origin'
-      })
-        .then(res => res.json())
-        .then(data => {
-          const icon = this.querySelector("i");
-
-          if (data.status === "unauthenticated") {
-            showToast("Please login to add to wishlist ❤️", "info");
-            setTimeout(() => {
-              window.location.href = "/auth/login/";
-            }, 1500);
-            return;
-          }
-
-          if (data.status === "success") {
-            icon?.classList.add("text-danger");
-            showToast("Added to wishlist ❤️", "success");
-            updateWishlistCount();  // ✅ New line
-          } else if (data.status === "removed") {
-            icon?.classList.remove("text-danger");
-            showToast("Removed from wishlist 💔", "info");
-            updateWishlistCount();  // ✅ New line
-          } else {
-            showToast(data.message || "Something went wrong ❌", "error");
-          }
-        })
-        .catch(err => {
-          console.error("❌ Wishlist error:", err);
-          showToast("Server error while updating wishlist ❌", "error");
-        });
-    });
-  });
 
   // ✅ Update counts on page load
   updateCartCount();
@@ -303,5 +277,3 @@ function updateWishlistCount() {
       }
     });
 }
-
-

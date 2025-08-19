@@ -129,12 +129,16 @@
   <i class="fab fa-whatsapp"></i>
 </a>
 
-{# Instagram icon → share/copy. Keep it an <a> to preserve CSS #}
-<a href="#" id="ig-share-link"
+{# Instagram share: copy link + open IG DMs #}
+<a href="https://www.instagram.com/direct/new/"
+   id="ig-share-link"
    data-url="{{ request.build_absolute_uri }}"
-   title="Share or copy link" aria-label="Share or copy link" style="text-decoration:none">
+   title="Share or copy link"
+   aria-label="Share or copy link"
+   style="text-decoration:none">
   <i class="fab fa-instagram"></i>
 </a>
+
 
       </div>
     </div>
