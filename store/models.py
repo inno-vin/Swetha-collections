@@ -54,7 +54,8 @@ RATING = (
 
 class Category(models.Model):
     title = models.CharField(max_length=100)
-    image = models.ImageField(upload_to="image", null=True, blank=True)
+    image = models.ImageField(upload_to="images/", null=True, blank=True)
+
     slug = models.SlugField(unique=True)
     cid = models.SlugField(max_length=255, unique=True)
   # TEMPORARILY allow null
@@ -73,7 +74,7 @@ class Category(models.Model):
 
 class Product(models.Model):
     name = models.CharField(max_length=100)
-    image = models.FileField(upload_to="images", blank=True, null=True, default="images/product.jpg")  # Fixed Default Image Path
+    image = models.FileField(upload_to="images/", blank=True, null=True, default="images/product.jpg")
     description = CKEditor5Field('Text', config_name='extends')
 
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True)

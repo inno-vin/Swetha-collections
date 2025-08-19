@@ -19,6 +19,11 @@ from django.urls import path, include
 from django.urls import include, path
 from django.conf.urls.static import static
 from django.conf import settings
+from django.http import HttpResponsePermanentRedirect
+from django.urls import re_path
+
+def media_redirect(request, path):
+    return HttpResponsePermanentRedirect(f"/media/images/{path}")
 
 urlpatterns = [
     # path('admin/', admin.site.urls),
@@ -39,7 +44,7 @@ urlpatterns = [
     # path("", include(("store.urls", "store"), namespace="store")),
 ]
 
-   
+
     
 
 # static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
