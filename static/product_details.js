@@ -147,6 +147,70 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .catch(error => console.error("❌ Add to cart error:", error));
     });
+      // --- Share/Copy via Instagram <a> (keeps your CSS) ---
+  const igLink = document.getElementById("ig-share-link");
+  const productUrl = igLink ? igLink.dataset.url : window.location.href;
+
+  // Fallback toast if you haven't defined showToast elsewhere
+  function _ensureToast() {
+    if (typeof window.showToast === "function") return;
+    let t = document.getElementById("share-toast");
+    if (!t) {
+      t = document.createElement("div");
+      t.id = "share-toast";
+      t.className = "share-toast";
+      t.setAttribute("role", "status");
+      t.setAttribute("aria-live", "polite");
+      document.body.appendChild(t);
+    }
+    window.showToast = function (msg = "Link copied!", type = "info") {
+      t.textContent = msg;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 1600);
+    };
+  }
+
+  async function _copyToClipboard(text) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.left = "-9999px";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        ta.remove();
+      }
+      (window.showToast || (()=>{}))("Link copied!", "success");
+    } catch (e) {
+      console.error(e);
+      (window.showToast || (()=>{}))("Couldn't copy. Long-press to copy.", "error");
+    }
+  }
+
+  if (igLink) {
+    _ensureToast();
+    igLink.addEventListener("click", async (e) => {
+      e.preventDefault();
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: "{{ product.name|escapejs }}",
+            text: "Check this out:",
+            url: productUrl
+          });
+          return;
+        } catch (err) {
+          // fall through to copy
+        }
+      }
+      await _copyToClipboard(productUrl);
+    });
+  }
+
   });
 
   // ✅ Wishlist Button Handling
