@@ -69,21 +69,27 @@
       <span class="wishlist-count">{{ wishlist_count|default:0 }}</span>
     </a>
 
-    <a href="{% url 'store:cart' %}" class="cart-link">
-      <i class="fas fa-shopping-cart"></i>
-      <span class="cart-count">
-        {% if request.user.is_authenticated %}
-          {% with total_qty=0 %}
-            {% for item in request.user.cart_set.all %}
-              {% with total_qty=total_qty|add:item.qty %}{% endwith %}
-            {% endfor %}
-            {{ total_qty }}
-          {% endwith %}
-        {% else %}
-          0
-        {% endif %}
-      </span>
-    </a>
+   {% if request.user.is_authenticated %}
+  <!-- Normal cart link for logged-in users -->
+  <a href="{% url 'store:cart' %}" class="cart-link">
+    <i class="fas fa-shopping-cart"></i>
+    <span class="cart-count">
+      {% with total_qty=0 %}
+        {% for item in request.user.cart_set.all %}
+          {% with total_qty=total_qty|add:item.qty %}{% endwith %}
+        {% endfor %}
+        {{ total_qty }}
+      {% endwith %}
+    </span>
+  </a>
+{% else %}
+  <!-- Redirect to login for guests -->
+  <a href="{% url 'userauths:login' %}?next={% url 'store:cart' %}" class="cart-link">
+    <i class="fas fa-shopping-cart"></i>
+    <span class="cart-count">0</span>
+  </a>
+{% endif %}
+
 
     {% if not request.user.is_authenticated %}
       <a href="/auth/login/" class="sign-in">Sign In</a>
@@ -124,7 +130,7 @@
     <li><a href="#" class="drawer-link" data-target="orders"><i class="fa-solid fa-box"></i> Orders</a></li>
     <li><a href="#" class="drawer-link" data-target="wishlist"><i class="fas fa-heart"></i>Wishlist</a></li>
     <li><a href="#" class="drawer-link" data-target="address"><i class="fa-solid fa-house"></i> Address</a></li>
-    <li><a href="#" class="drawer-link" data-target="profile"><i class="fa-regular fa-user"></i>  Profile</a></li>
+    <li><a href="#" class="drawer-link" data-target="profile"><i class="fa fa-user"></i>  Profile</a></li>
   </ul>
 
 
@@ -247,8 +253,8 @@ document.querySelectorAll(".drawer-link").forEach(a=>{
     <div class="footer-section exp">
       <div class="footer-title">Explore</div>
       <ul class="footer-links">
-        <li><a href="/index">Home page</a></li>
-        <li><a href="/about">About us</a></li>
+        <li><a href="/index.html">Home page</a></li>
+        <li><a href="/about.html">About us</a></li>
         {% comment %} <li><a href="#">Contact</a></li>
         <li><a href="#">Privacy Policy</a></li> {% endcomment %}
       </ul>
