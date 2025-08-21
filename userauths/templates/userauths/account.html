@@ -60,14 +60,7 @@
             <p>Total: ₹{{ order.total }}</p>
 
             <!-- Place this inside each .order-card (e.g., under Total:) -->
-<button
-  type="button"
-  class="btn btn-sm btn-outline-primary cancel-order-btn"
-  style="margin-top:10px; border:2px solid #6a0dad; border-radius:6px; background-color:white; color:#6a0dad; font-weight:bold;"
-  data-order-id="{{ order.order_id }}"
-  data-order-total="{{ order.total }}">
-  ✖ Cancel / Refund
-</button>
+
 
 
             <a href="#"
@@ -124,6 +117,14 @@
                               data-order-item-id="{{ item.id }}">
                         ★ Review
                       </button>
+                      <button
+  type="button"
+  class="btn btn-sm btn-outline-primary cancel-order-btn"
+  style="margin-top:10px; border:2px solid #6a0dad; border-radius:6px; background-color:white; color:#6a0dad; font-weight:bold;"
+  data-order-id="{{ order.order_id }}"
+  data-order-total="{{ order.total }}">
+  ✖ Cancel / Refund
+</button>
                     {% else %}
                       <span class="text-danger">Product Unavailable</span>
                     {% endif %}
