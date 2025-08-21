@@ -746,18 +746,26 @@ def cancel_order(request):
     order_id = request.POST.get("order_id")
     reason   = request.POST.get("reason")
     action   = request.POST.get("action")  # 'refund' or 'reorder'
-    upi_id   = request.POST.get("upi_id", "").strip()
-    bank_name = request.POST.get("bank_account_name", "").strip()
-    bank_num  = request.POST.get("bank_account_number", "").strip()
-    bank_ifsc = request.POST.get("bank_ifsc", "").strip()
+    upi_id   = (request.POST.get("upi_id") or "").strip()
+    bank_name = (request.POST.get("bank_account_name") or "").strip()
+    bank_num  = (request.POST.get("bank_account_number") or "").strip()
+    bank_ifsc = (request.POST.get("bank_ifsc") or "").strip()
 
-    order = get_object_or_404(Order, order_id=order_id, user=request.user)
+    # ✅ use customer=... (matches checkout creation)
+    order = get_object_or_404(Order, order_id=order_id, customer=request.user)
 
-    if order.status.lower() not in ["processing", "pending", "confirmed"]:
+    blocked_states = {"delivered", "completed", "cancelled", "returned", "refund issued"}
+    cancellable_states = {"processing", "pending", "confirmed", "cancellation requested"}
+
+    if order.status and order.status.lower() in blocked_states:
         messages.error(request, "This order can no longer be cancelled.")
         return redirect("userauths:account")
 
-    # Store request on order (or create a separate model)
+    if order.status and order.status.lower() not in cancellable_states:
+        messages.error(request, "This order cannot be cancelled at its current status.")
+        return redirect("userauths:account")
+
+    # store details on the order
     order.cancellation_reason = reason
     order.cancellation_action = action
     order.refund_upi_id = upi_id or None
