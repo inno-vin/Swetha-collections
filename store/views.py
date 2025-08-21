@@ -39,19 +39,25 @@ def index(request):
         "categories": categories,
     })
 
-# Product detail page
+from django.http import Http404
+
 def product_detail(request, slug):
-    product = Product.objects.get(status="Published", slug=slug)
+    # Get the latest published product if duplicates exist
+    product = (Product.objects
+               .filter(status="Published", slug=slug)
+               .order_by('-id')
+               .first())
+    if not product:
+        raise Http404("Product not found")
+
     related_product = Product.objects.filter(
         category=product.category, status="Published"
     ).exclude(id=product.id)
 
     color_variants = VariantItem.objects.filter(
-    variant__product=product,
-    variant__name__icontains="color"
-)
-
-    
+        variant__product=product,
+        variant__name__icontains="color"
+    )
 
     product_stock_range = range(1, product.stock + 1)
 
@@ -59,8 +65,9 @@ def product_detail(request, slug):
         "product": product,
         "related_product": related_product,
         "product_stock_range": product_stock_range,
-        "color_variants": color_variants,  # add this
+        "color_variants": color_variants,
     })
+
 
 @csrf_exempt
 def add_to_cart(request):

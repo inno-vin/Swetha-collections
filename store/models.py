@@ -88,7 +88,8 @@ class Product(models.Model):
     feature = models.BooleanField(default=False, verbose_name="Marketplace Featured")
 
     sku = ShortUUIDField(unique=True, length=5, max_length=50, prefix="SKU", alphabet="1234567890")
-    slug = models.SlugField(null=True, blank=True)
+    slug = models.SlugField(max_length=150, unique=True, db_index=True, blank=True)
+
 
     date = models.DateTimeField(default=timezone.now)
 
