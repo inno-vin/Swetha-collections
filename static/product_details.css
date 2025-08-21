@@ -49,21 +49,33 @@ body {
 }
 
 /* Thumbnails (desktop column) */
+/* MOBILE: thumbnails = one-row, horizontal scroll */
 .thumbnail-gallery {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  flex-direction: row;
+  flex-wrap: nowrap;       /* stay in one row */
+  gap: 8px;
+  overflow-x: auto;        /* scroll only inside the strip */
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+  width: 100%;
+  max-width: 420px;
+  margin: 8px auto 0;
+  padding: 0 2px 6px;
 }
 .thumbnail-gallery img {
-  width: 60px;
-  height: auto;
-  cursor: pointer;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  transition: transform 0.3s ease;
+  flex: 0 0 auto;          /* don't shrink */
+  width: 62px;
+  height: 62px;
+  object-fit: cover;
+  border-radius: 8px;
+  scroll-snap-align: center;
 }
-.thumbnail-gallery img:hover { transform: scale(1.1); }
-.thumbnail.active { border: 2px solid #6a1b9a; }
+/* optional: hide scrollbar */
+.thumbnail-gallery::-webkit-scrollbar { display: none; }
+.thumbnail-gallery { scrollbar-width: none; }
+
 
 /* Desktop zoom bits (hidden by default; enabled via JS if you want) */
 #zoom-lens {
