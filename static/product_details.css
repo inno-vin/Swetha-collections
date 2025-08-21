@@ -343,3 +343,20 @@ body {
   transition: all .25s ease; z-index: 9999;
 }
 .share-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+/* For mobile: push thumbnails below main image */
+@media (max-width: 768px) {
+  .thumbnails-container {
+    order: 2;   /* move thumbnails after main image */
+    margin-top: 10px;
+  }
+
+  .main-image-container {
+    order: 1;   /* keep main image first */
+  }
+
+  /* Ensure they stack vertically */
+  .product-gallery {
+    display: flex;
+    flex-direction: column;
+  }
+}
