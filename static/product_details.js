@@ -238,6 +238,7 @@ document.addEventListener("DOMContentLoaded", function () {
   updateWishlistCount();
 });
 
+
 // ✅ CSRF Token Getter
 function getCookie(name) {
   let cookieValue = null;
@@ -278,56 +279,92 @@ function updateWishlistCount() {
     });
 }
 
-document.addEventListener("DOMContentLoaded", () => {
+// ===== Unified Wishlist Handler (product page only) =====
+(() => {
+  let inFlight = false; // prevent double clicks
 
-   // -------------------- Wishlist Button Handler --------------------
-   document.querySelectorAll(".wishlist-btn2")
-.forEach(btn => {
-        btn.addEventListener("click", function () {
-            const productId = this.dataset.productId;
-            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+  document.addEventListener("click", async (e) => {
+    const btn = e.target.closest(".wishlist-btn, .wishlist-btn2");
+    if (!btn) return;
 
-            fetch(`/wishlist/add/${productId}/`, {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrfToken
-                },
-                credentials: 'same-origin'
-            })
-            .then(res => res.text())
-            .then(text => {
-                try {
-                    console.log("Server response:", text);  // Optional debug log
-                    const data = JSON.parse(text);
+    // if template says login-redirect, let it go
+    if (btn.dataset.loginRedirect === "true") return;
 
-                    if (data.status === "unauthenticated") {
-                        showToast("Please login to add to wishlist ❤️", "info");
-                        setTimeout(() => {
-                            window.location.href = "/auth/login/";
-                        }, 2000);
-                        return;
-                    }
+    e.preventDefault();
+    e.stopImmediatePropagation(); // stop index.js from firing too
 
-                    if (data.status === "success") {
-                        showToast("Added to Wishlist ❤️", "success");
-                        const wishlistCount = document.getElementById("wishlist-count");
-                        if (wishlistCount) {
-                            wishlistCount.textContent = (parseInt(wishlistCount.textContent) || 0) + 1;
-                        }
-                    } else {
-                        showToast(data.message || "Something went wrong ❌", "error");
-                    }
+    if (inFlight) return;
+    inFlight = true;
 
-                } catch (err) {
-                    console.error("Unexpected response:", text);
-                    showToast("Server error while updating wishlist ❌", "error");
-                }
-            })
-            .catch(err => {
-                console.error("Network error:", err);
-                showToast("Network error ❌", "error");
-            });
-        });
-    });
+    try {
+      const productId = btn.dataset.productId || btn.getAttribute("data-product-id");
+      if (!productId) { inFlight = false; return; }
 
-});
+      // ✅ Get CSRF: prefer hidden input, else cookie
+      const csrfToken =
+        document.querySelector('[name="csrfmiddlewaretoken"]')?.value ||
+        getCookie("csrftoken");
+
+      const res = await fetch(`/wishlist/add/${productId}/`, {
+        method: "POST",
+        headers: {
+          "X-CSRFToken": csrfToken,
+          "X-Requested-With": "XMLHttpRequest",
+        },
+        credentials: "same-origin",
+      });
+
+      // Optional: handle CSRF/session failure statuses cleanly
+      if (!res.ok && (res.status === 403 || res.status === 419)) {
+        showToast("Session expired. Please log in again.", "error");
+        window.location.href = "/auth/login/";
+        return;
+      }
+
+      const raw = await res.text();
+      let data;
+      try { data = JSON.parse(raw); }
+      catch { data = { status: res.ok ? "success" : "error", message: raw }; }
+
+      if (data.status === "unauthenticated") {
+        window.location.href = btn.dataset.loginUrl || "/auth/login/";
+        return;
+      }
+
+      const added   = data.status === "success" || data.added === true || data.action === "added";
+      const removed = data.action === "removed" || data.removed === true;
+
+      if (added) {
+        // avoid double-increment if already liked
+        const icon = btn.querySelector("i");
+        const wasLiked = icon?.classList.contains("text-danger");
+        icon?.classList.add("text-danger");
+
+        const el = document.querySelector(".wishlist-count") || document.getElementById("wishlist-count");
+        if (el && !wasLiked) {
+          el.textContent = (parseInt(el.textContent) || 0) + 1;
+        }
+        showToast(data.message || "Added to Wishlist ❤️", "success");
+
+      } else if (removed) {
+        const icon = btn.querySelector("i");
+        const wasLiked = icon?.classList.contains("text-danger");
+        icon?.classList.remove("text-danger");
+
+        const el = document.querySelector(".wishlist-count") || document.getElementById("wishlist-count");
+        if (el && wasLiked) {
+          el.textContent = Math.max(0, (parseInt(el.textContent) || 0) - 1);
+        }
+        showToast(data.message || "Removed from Wishlist", "info");
+
+      } else {
+        showToast(data.message || "Something went wrong ❌", "error");
+      }
+    } catch (err) {
+      console.error(err);
+      showToast("Network/Server error ❌", "error");
+    } finally {
+      inFlight = false;
+    }
+  }, true); // capture so this runs before index.js
+})();
