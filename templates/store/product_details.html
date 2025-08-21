@@ -106,7 +106,7 @@
   <button class="add-to-cart" data-product-id="{{ product.id }}">
     <i class="fas fa-shopping-cart"></i> Add to Cart
   </button>
-  <button id="main-wishlist-btn" class="wishlist-btn" data-product-id="{{ product.id }}">
+  <button id="main-wishlist-btn" class="wishlist-btn2" data-product-id="{{ product.id }}">
     <i class="fas fa-heart{% if product.id in wishlist_ids %} text-danger{% endif %}"></i>
   </button>
 {% else %}
@@ -114,7 +114,7 @@
           data-login-redirect="true" data-login-url="{% url 'userauths:login' %}">
     <i class="fas fa-shopping-cart"></i> Add to Cart
   </button>
-  <button id="main-wishlist-btn" class="wishlist-btn" type="button"
+  <button id="main-wishlist-btn" class="wishlist-btn2" type="button"
           data-login-redirect="true" data-login-url="{% url 'userauths:login' %}">
     <i class="fas fa-heart"></i>
   </button>
@@ -236,7 +236,7 @@
   <button class="add-to-cart" data-product-id="{{ p.id }}">
     <i class="fas fa-shopping-cart"></i> Add to cart
   </button>
-  <button class="wishlist-btn" data-product-id="{{ p.id }}">
+  <button class="wishlist-btn2" data-product-id="{{ p.id }}">
     <i class="fas fa-heart{% if p.id in wishlist_ids %} text-danger{% endif %}"></i>
   </button>
 {% else %}
@@ -244,7 +244,7 @@
           data-login-redirect="true" data-login-url="{% url 'userauths:login' %}">
     <i class="fas fa-shopping-cart"></i> Add to cart
   </button>
-  <button class="wishlist-btn" type="button"
+  <button class="wishlist-btn2" type="button"
           data-login-redirect="true" data-login-url="{% url 'userauths:login' %}">
     <i class="fas fa-heart"></i>
   </button>

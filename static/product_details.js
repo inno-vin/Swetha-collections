@@ -277,3 +277,57 @@ function updateWishlistCount() {
       }
     });
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+
+   // -------------------- Wishlist Button Handler --------------------
+   document.querySelectorAll(".wishlist-btn2")
+.forEach(btn => {
+        btn.addEventListener("click", function () {
+            const productId = this.dataset.productId;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+
+            fetch(`/wishlist/add/${productId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                credentials: 'same-origin'
+            })
+            .then(res => res.text())
+            .then(text => {
+                try {
+                    console.log("Server response:", text);  // Optional debug log
+                    const data = JSON.parse(text);
+
+                    if (data.status === "unauthenticated") {
+                        showToast("Please login to add to wishlist ❤️", "info");
+                        setTimeout(() => {
+                            window.location.href = "/auth/login/";
+                        }, 2000);
+                        return;
+                    }
+
+                    if (data.status === "success") {
+                        showToast("Added to Wishlist ❤️", "success");
+                        const wishlistCount = document.getElementById("wishlist-count");
+                        if (wishlistCount) {
+                            wishlistCount.textContent = (parseInt(wishlistCount.textContent) || 0) + 1;
+                        }
+                    } else {
+                        showToast(data.message || "Something went wrong ❌", "error");
+                    }
+
+                } catch (err) {
+                    console.error("Unexpected response:", text);
+                    showToast("Server error while updating wishlist ❌", "error");
+                }
+            })
+            .catch(err => {
+                console.error("Network error:", err);
+                showToast("Network error ❌", "error");
+            });
+        });
+    });
+
+});

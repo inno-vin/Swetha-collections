@@ -58,7 +58,7 @@ function showToast(message, type = "info") {
 document.addEventListener("DOMContentLoaded", () => {
 
    // -------------------- Wishlist Button Handler --------------------
-   document.querySelectorAll(".wishlist-btn, .wishlist-btn2")
+   document.querySelectorAll(".wishlist-btn")
 .forEach(btn => {
         btn.addEventListener("click", function () {
             const productId = this.dataset.productId;
