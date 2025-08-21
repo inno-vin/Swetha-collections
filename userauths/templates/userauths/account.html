@@ -122,7 +122,7 @@
                     {% if item.product and item.product.slug %}
                       <a href="{% url 'store:product_detail' item.product.slug %}"
                          class="btn btn-sm btn-outline-primary"
-                         style="text-decoration:none;border:2px solid #6a0dad; border-radius:6px;">
+                         style="text-decoration:none;border:2px solid #6a0dad; border-radius:6px;color:#6a0dad;">
                         View Product
                       </a>
 
@@ -149,7 +149,7 @@
                         </button>
                       {% else %}
                         <div class="delivered-note" style="margin-top:10px; font-weight:600;">
-                          ✅ Order delivered — cancellation/refund unavailable.
+                          ✅ Order delivered.
                         </div>
                       {% endif %}
                     {% else %}

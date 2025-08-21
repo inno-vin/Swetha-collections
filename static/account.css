@@ -983,3 +983,28 @@ button[type="submit"]:hover {
 
 /* Checked: fill chosen and all to its left */
 .star-picker input:checked ~ label { color: #ffb400; }
+/* Limit modal height and allow scrolling inside */
+.cancel-modal .modal-dialog {
+  max-height: 90vh;         /* never exceed viewport height */
+  display: flex;
+  flex-direction: column;
+}
+
+.cancel-modal .modal-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+}
+
+.cancel-modal .modal-body {
+  overflow-y: auto;         /* enable scrolling */
+  max-height: calc(90vh - 120px); /* adjust for header+footer height */
+  padding-right: 10px;      /* prevent scrollbar overlap */
+}
+
+/* Optional: smooth scroll on focus */
+.cancel-modal input,
+.cancel-modal textarea {
+  scroll-margin-top: 80px;
+}
