@@ -394,3 +394,57 @@ html, body { overflow-x: hidden; }
   flex: 0 0 auto;
   display: block;
 }
+
+
+/* MOBILE ONLY — keep main image stable and let thumbs scroll fully */
+@media (max-width: 768px) {
+  /* Do NOT let the thumbnail area grow taller when more thumbs exist */
+  .thumbnail-gallery {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;           /* single row */
+    gap: 8px;
+
+    /* scrolling inside the strip only */
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+
+    /* keep a fixed, slim height so main image size never changes */
+    height: 72px;                /* lock the strip height */
+    max-height: 72px;
+
+    /* make sure it doesn’t steal width */
+    width: 100%;
+    max-width: 420px;
+    margin: 8px auto 0;
+    padding: 0 8px 6px;
+
+    /* optional: smoother scroll-to-edge with a small end spacer */
+    scroll-snap-type: x proximity;
+  }
+
+  .thumbnail-gallery img {
+    flex: 0 0 62px;              /* fixed thumb width; don't shrink */
+    width: 62px;
+    height: 62px;
+    object-fit: cover;
+    border-radius: 8px;
+    scroll-snap-align: center;
+  }
+
+  /* allow the last thumbnail to be fully reachable/visible */
+  .thumbnail-gallery::after {
+    content: "";
+    flex: 0 0 8px;               /* small spacer so last item isn’t clipped */
+  }
+
+  /* hide scrollbar (visual only; still scrolls) */
+  .thumbnail-gallery::-webkit-scrollbar { display: none; }
+  .thumbnail-gallery { scrollbar-width: none; }
+
+  /* make sure the gallery sits BELOW the main image on mobile */
+  .product-images { flex-direction: column; align-items: center; }
+  .main-image { order: 1; }
+  .thumbnail-gallery { order: 2; }
+}
