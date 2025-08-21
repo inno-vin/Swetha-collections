@@ -226,19 +226,34 @@ body {
     width: 100%;
     max-width: 420px;
     margin: 8px auto 0;
+
+    /* make it a swipeable row */
+    display: flex;
     flex-direction: row;
-    justify-content: center;
+    flex-wrap: nowrap;              /* prevent wrapping */
+    justify-content: flex-start;    /* start at left */
     gap: 8px;
-    padding: 0;
+    padding: 0 4px 6px;
+
+    overflow-x: auto;               /* horizontal scroll */
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;  /* optional: nice snapping */
   }
+
   .thumbnail-gallery img {
     width: 62px !important;
     height: 62px !important;
     object-fit: cover;
     border-radius: 8px;
-    flex: 0 0 auto;
+    flex: 0 0 auto;                 /* don't shrink */
+    scroll-snap-align: center;      /* optional: snap target */
   }
 
+  /* optional: hide scrollbar */
+  .thumbnail-gallery::-webkit-scrollbar { display: none; }
+  .thumbnail-gallery { scrollbar-width: none; }
+}
   /* Info card and subtle right shift as requested */
   .product-info {
     background: #fff;
