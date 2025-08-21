@@ -1008,3 +1008,24 @@ button[type="submit"]:hover {
 .cancel-modal textarea {
   scroll-margin-top: 80px;
 }
+/* --- Cancel/Refund modal: make content scrollable --- */
+#cancel-modal .review-dialog {
+  /* limit to viewport and allow scrolling inside */
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* (nice) keep header/buttons visible while the form scrolls */
+#cancel-modal .review-dialog {
+  display: flex;
+  flex-direction: column;
+}
+#cancel-modal form {
+  overflow-y: auto;
+  max-height: calc(90vh - 70px); /* subtract title + close button area */
+  padding-right: 8px;            /* avoid scrollbar overlap */
+}
+@media (max-width: 768px) {
+  #cancel-modal .review-dialog { max-height: 92vh; }
+  #cancel-modal form { max-height: calc(92vh - 70px); }
+}
