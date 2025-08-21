@@ -59,12 +59,9 @@
             <p>Order Time: {{ order.date }}</p>
             <p>Total: ₹{{ order.total }}</p>
 
-            <!-- Place this inside each .order-card (e.g., under Total:) -->
-
-
-
             <a href="#"
-               class="btn btn-sm btn-outline-primary view-order-btn btn-order-right" style="text-decoration:none;border:2px solid #6a0dad;margin-right:568px; border-radius:6px;color:#6a0dad;"
+               class="btn btn-sm btn-outline-primary view-order-btn btn-order-right"
+               style="text-decoration:none;border:2px solid #6a0dad;margin-right:568px; border-radius:6px;color:#6a0dad;"
                data-order-id="{{ order.order_id }}">
                View Order
             </a>
@@ -106,7 +103,11 @@
                     <p style="margin-bottom:10px;">{{ item.qty }} × ₹{{ item.price }} = ₹{{ item.sub_total }}</p>
 
                     {% if item.product and item.product.slug %}
-                      <a href="{% url 'store:product_detail' item.product.slug %}" class="btn btn-sm btn-outline-primary" style="text-decoration:none;border:2px solid #6a0dad; border-radius:6px;">View Product</a>
+                      <a href="{% url 'store:product_detail' item.product.slug %}"
+                         class="btn btn-sm btn-outline-primary"
+                         style="text-decoration:none;border:2px solid #6a0dad; border-radius:6px;">
+                        View Product
+                      </a>
 
                       <!-- Review button: passes product + order item id -->
                       <button type="button"
@@ -117,14 +118,22 @@
                               data-order-item-id="{{ item.id }}">
                         ★ Review
                       </button>
-                      <button
-  type="button"
-  class="btn btn-sm btn-outline-primary cancel-order-btn"
-  style="margin-top:10px; border:2px solid #6a0dad; border-radius:6px; background-color:white; color:#6a0dad; font-weight:bold;"
-  data-order-id="{{ order.order_id }}"
-  data-order-total="{{ order.total }}">
-  ✖ Cancel / Refund
-</button>
+
+                      {# Cancel/Refund button shown only for cancellable states #}
+                      {% if order.status != "Delivered" and order.status != "Completed" and order.status != "Cancelled" %}
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-primary cancel-order-btn"
+                          style="margin-top:10px; border:2px solid #6a0dad; border-radius:6px; background-color:white; color:#6a0dad; font-weight:bold;"
+                          data-order-id="{{ order.order_id }}"
+                          data-order-total="{{ order.total }}">
+                          ✖ Cancel / Refund
+                        </button>
+                      {% else %}
+                        <div class="delivered-note" style="margin-top:10px; font-weight:600;">
+                          ✅ Order delivered — cancellation/refund unavailable.
+                        </div>
+                      {% endif %}
                     {% else %}
                       <span class="text-danger">Product Unavailable</span>
                     {% endif %}
@@ -252,13 +261,27 @@
       <input type="hidden" name="product_id" id="rv-product-id">
       <input type="hidden" name="order_item_id" id="rv-order-item-id"><!-- IMPORTANT -->
 
-      <!-- Stars -->
-    <div class="star-picker" aria-label="Star rating">
-  {% for s in "54321"|make_list %}
-    <input type="radio" name="rating" id="star{{ s }}" value="{{ s }}" required>
-    <label for="star{{ s }}" title="{{ s }} star{% if s != '1' %}s{% endif %}">★</label>
+      <!-- Stars (clean loop; cancel modal moved below entire review modal) -->
+      <div class="star-picker" aria-label="Star rating">
+        {% for s in "54321"|make_list %}
+          <input type="radio" name="rating" id="star{{ s }}" value="{{ s }}" required>
+          <label for="star{{ s }}" title="{{ s }} star{% if s != '1' %}s{% endif %}">★</label>
+        {% endfor %}
+      </div>
 
-    <!-- Cancel/Refund Modal -->
+      <!-- Textarea -->
+      <label for="rv-note" class="review-label">Your review</label>
+      <textarea id="rv-note" name="review" rows="4" class="review-text" placeholder="Tell us about the quality, fit, delivery, etc." required></textarea>
+
+      <div class="review-actions">
+        <button type="submit" class="btn btn-primary" style="border-radius:6px;">Submit Review</button>
+        <button type="button" class="btn btn-light review-cancel" style="border-radius:6px;">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Cancel/Refund Modal (moved outside review stars loop) -->
 <div id="cancel-modal" class="review-modal" aria-hidden="true">
   <div class="review-dialog" style="max-width:640px;">
     <button class="review-close" aria-label="Close">&times;</button>
@@ -320,30 +343,15 @@
   </div>
 </div>
 
-  {% endfor %}
-</div>
-
-      <!-- Textarea -->
-      <label for="rv-note" class="review-label">Your review</label>
-      <textarea id="rv-note" name="review" rows="4" class="review-text" placeholder="Tell us about the quality, fit, delivery, etc." required></textarea>
-
-      <div class="review-actions">
-        <button type="submit" class="btn btn-primary" style="border-radius:6px;">Submit Review</button>
-        <button type="button" class="btn btn-light review-cancel" style="border-radius:6px;">Cancel</button>
-      </div>
-    </form>
-  </div>
-</div>
-
 <script>
-  // Open modal with product info
+  // Open Review modal with product info
   document.addEventListener('click', (e) => {
     const btn = e.target.closest('.review-btn');
     if (!btn) return;
 
     document.getElementById('rv-product-name').textContent = btn.dataset.productName || 'Product';
     document.getElementById('rv-product-id').value = btn.dataset.productId || '';
-    document.getElementById('rv-order-item-id').value = btn.dataset.orderItemId || ''; // <-- set order item id
+    document.getElementById('rv-order-item-id').value = btn.dataset.orderItemId || '';
     document.getElementById('rv-note').value = '';
 
     // clear stars
@@ -353,7 +361,7 @@
     document.getElementById('review-modal').setAttribute('aria-hidden', 'false');
   });
 
-  // Close handlers
+  // Close Review modal
   document.querySelector('.review-close')?.addEventListener('click', () => {
     document.getElementById('review-modal').classList.remove('open');
     document.getElementById('review-modal').setAttribute('aria-hidden', 'true');
@@ -362,8 +370,6 @@
     document.getElementById('review-modal').classList.remove('open');
     document.getElementById('review-modal').setAttribute('aria-hidden', 'true');
   });
-
-  // Click outside dialog closes
   document.getElementById('review-modal')?.addEventListener('click', (e) => {
     if (e.target.id === 'review-modal') {
       e.currentTarget.classList.remove('open');
@@ -371,7 +377,7 @@
     }
   });
 
-  // Star hover effect (purely visual)
+  // Star hover effect (visual)
   const starPicker = document.querySelector('.star-picker');
   if (starPicker) {
     starPicker.addEventListener('mouseover', (e) => {
@@ -385,7 +391,8 @@
     });
   }
 
-   document.addEventListener('click', (e) => {
+  // Open Cancel/Refund modal
+  document.addEventListener('click', (e) => {
     const btn = e.target.closest('.cancel-order-btn');
     if (!btn) return;
 
@@ -403,7 +410,7 @@
     modal.setAttribute('aria-hidden', 'false');
   });
 
-  // Close handlers for Cancel modal
+  // Close Cancel/Refund modal
   document.querySelector('#cancel-modal .review-close')?.addEventListener('click', () => {
     const modal = document.getElementById('cancel-modal');
     modal.classList.remove('open');
@@ -429,7 +436,7 @@
     }
   });
 
-  // Simple validation: if refund chosen, require at least UPI or full bank details
+  // Validation for refund path: require UPI or full bank details
   document.getElementById('cancel-form')?.addEventListener('submit', (e) => {
     const action = document.querySelector('#cancel-form input[name="action"]:checked')?.value;
     if (action === 'refund') {
