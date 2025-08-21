@@ -723,3 +723,50 @@ def add_review(request):
 
     messages.success(request, "Thanks! Your review has been submitted.")
     return redirect("store:product_detail", slug=product.slug)
+# from django.contrib.auth.decorators import login_required
+# from django.shortcuts import redirect, get_object_or_404
+# from django.contrib import messages
+# from .models import Order  # adjust import
+
+
+
+@login_required
+def cancel_order(request):
+    if request.method != "POST":
+        messages.error(request, "Invalid request.")
+        return redirect("userauths:account")
+
+    order_id = request.POST.get("order_id")
+    reason   = request.POST.get("reason")
+    action   = request.POST.get("action")  # 'refund' or 'reorder'
+    upi_id   = request.POST.get("upi_id", "").strip()
+    bank_name = request.POST.get("bank_account_name", "").strip()
+    bank_num  = request.POST.get("bank_account_number", "").strip()
+    bank_ifsc = request.POST.get("bank_ifsc", "").strip()
+
+    order = get_object_or_404(Order, order_id=order_id, user=request.user)
+
+    if order.status.lower() not in ["processing", "pending", "confirmed"]:
+        messages.error(request, "This order can no longer be cancelled.")
+        return redirect("userauths:account")
+
+    # Store request on order (or create a separate model)
+    order.cancellation_reason = reason
+    order.cancellation_action = action
+    order.refund_upi_id = upi_id or None
+    order.refund_bank_account_name = bank_name or None
+    order.refund_bank_account_number = bank_num or None
+    order.refund_bank_ifsc = bank_ifsc or None
+    order.status = "Cancellation Requested"
+    order.save(update_fields=[
+        "cancellation_reason", "cancellation_action",
+        "refund_upi_id", "refund_bank_account_name",
+        "refund_bank_account_number", "refund_bank_ifsc", "status"
+    ])
+
+    if action == "reorder":
+        messages.success(request, "Cancellation requested. You can place a new order now.")
+        return redirect("store:shop")
+
+    messages.success(request, "Your cancellation/refund request has been submitted.")
+    return redirect("userauths:account")

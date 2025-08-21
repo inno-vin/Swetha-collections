@@ -30,4 +30,6 @@ urlpatterns = [
     path('about/', views.about_view, name='about'),
     path('wishlist/count/', views.wishlist_count, name='wishlist_count'),
     path("reviews/add/", views.add_review, name="add_review"),
+    path("order/cancel/", views.cancel_order, name="cancel_order")
+
 ]

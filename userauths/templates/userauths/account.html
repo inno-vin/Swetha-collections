@@ -59,6 +59,17 @@
             <p>Order Time: {{ order.date }}</p>
             <p>Total: ₹{{ order.total }}</p>
 
+            <!-- Place this inside each .order-card (e.g., under Total:) -->
+<button
+  type="button"
+  class="btn btn-sm btn-outline-primary cancel-order-btn"
+  style="margin-top:10px; border:2px solid #6a0dad; border-radius:6px; background-color:white; color:#6a0dad; font-weight:bold;"
+  data-order-id="{{ order.order_id }}"
+  data-order-total="{{ order.total }}">
+  ✖ Cancel / Refund
+</button>
+
+
             <a href="#"
                class="btn btn-sm btn-outline-primary view-order-btn btn-order-right" style="text-decoration:none;border:2px solid #6a0dad;margin-right:568px; border-radius:6px;color:#6a0dad;"
                data-order-id="{{ order.order_id }}">
@@ -245,6 +256,69 @@
   {% for s in "54321"|make_list %}
     <input type="radio" name="rating" id="star{{ s }}" value="{{ s }}" required>
     <label for="star{{ s }}" title="{{ s }} star{% if s != '1' %}s{% endif %}">★</label>
+
+    <!-- Cancel/Refund Modal -->
+<div id="cancel-modal" class="review-modal" aria-hidden="true">
+  <div class="review-dialog" style="max-width:640px;">
+    <button class="review-close" aria-label="Close">&times;</button>
+    <h3 class="review-title">Cancel Order <span id="cancel-order-id-label"></span></h3>
+
+    <form method="POST" action="{% url 'store:cancel_order' %}" id="cancel-form">
+      {% csrf_token %}
+      <input type="hidden" name="order_id" id="cancel-order-id">
+
+      <!-- Reason -->
+      <label class="review-label" for="cancel-reason">Reason for cancellation</label>
+      <select id="cancel-reason" name="reason" class="review-text" required>
+        <option value="" disabled selected>Select a reason</option>
+        <option value="ordered_by_mistake">Ordered by mistake</option>
+        <option value="found_better_price">Found a better price</option>
+        <option value="delay_in_shipping">Delay in shipping</option>
+        <option value="changed_mind">Changed my mind</option>
+        <option value="other">Other</option>
+      </select>
+
+      <!-- Action -->
+      <div style="margin-top:14px;">
+        <label class="review-label">What would you like to do?</label>
+        <div style="display:flex; gap:18px; margin-top:6px;">
+          <label><input type="radio" name="action" value="refund" required> Request a refund</label>
+          <label><input type="radio" name="action" value="reorder" required> Place another order</label>
+        </div>
+      </div>
+
+      <!-- Refund Details (shown only if action=refund) -->
+      <div id="refund-fields" style="display:none; margin-top:14px; border:1px dashed #ccc; padding:12px; border-radius:8px;">
+        <p style="margin:0 0 8px;"><strong>Refund details</strong> (choose one)</p>
+
+        <!-- UPI -->
+        <label class="review-label" for="upi-id">UPI ID (optional)</label>
+        <input type="text" id="upi-id" name="upi_id" class="review-text" placeholder="example@upi">
+
+        <div style="text-align:center; margin:8px 0; font-size:12px;">— OR —</div>
+
+        <!-- Bank -->
+        <label class="review-label" for="acc-name">Account Holder Name (optional)</label>
+        <input type="text" id="acc-name" name="bank_account_name" class="review-text" placeholder="Full name as per bank">
+
+        <label class="review-label" for="acc-number">Account Number (optional)</label>
+        <input type="text" id="acc-number" name="bank_account_number" class="review-text" placeholder="1234567890">
+
+        <label class="review-label" for="ifsc">IFSC (optional)</label>
+        <input type="text" id="ifsc" name="bank_ifsc" class="review-text" placeholder="SBIN0000000">
+        <p style="font-size:12px; color:#555; margin-top:8px;">
+          Provide either a valid UPI ID <em>or</em> complete bank details for refund.
+        </p>
+      </div>
+
+      <div class="review-actions">
+        <button type="submit" class="btn btn-primary" style="border-radius:6px;">Submit</button>
+        <button type="button" class="btn btn-light cancel-close" style="border-radius:6px;">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
   {% endfor %}
 </div>
 
@@ -309,6 +383,67 @@
       starPicker.classList.remove('s1','s2','s3','s4','s5');
     });
   }
+
+   document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.cancel-order-btn');
+    if (!btn) return;
+
+    const orderId = btn.dataset.orderId || '';
+    document.getElementById('cancel-order-id').value = orderId;
+    document.getElementById('cancel-order-id-label').textContent = orderId ? ('#' + orderId) : '';
+
+    // reset form
+    const form = document.getElementById('cancel-form');
+    form.reset();
+    document.getElementById('refund-fields').style.display = 'none';
+
+    const modal = document.getElementById('cancel-modal');
+    modal.classList.add('open');
+    modal.setAttribute('aria-hidden', 'false');
+  });
+
+  // Close handlers for Cancel modal
+  document.querySelector('#cancel-modal .review-close')?.addEventListener('click', () => {
+    const modal = document.getElementById('cancel-modal');
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+  });
+  document.querySelector('#cancel-modal .cancel-close')?.addEventListener('click', () => {
+    const modal = document.getElementById('cancel-modal');
+    modal.classList.remove('open');
+    modal.setAttribute('aria-hidden', 'true');
+  });
+  document.getElementById('cancel-modal')?.addEventListener('click', (e) => {
+    if (e.target.id === 'cancel-modal') {
+      e.currentTarget.classList.remove('open');
+      e.currentTarget.setAttribute('aria-hidden', 'true');
+    }
+  });
+
+  // Toggle refund fields
+  document.getElementById('cancel-form')?.addEventListener('change', (e) => {
+    if (e.target.name === 'action') {
+      const showRefund = e.target.value === 'refund';
+      document.getElementById('refund-fields').style.display = showRefund ? 'block' : 'none';
+    }
+  });
+
+  // Simple validation: if refund chosen, require at least UPI or full bank details
+  document.getElementById('cancel-form')?.addEventListener('submit', (e) => {
+    const action = document.querySelector('#cancel-form input[name="action"]:checked')?.value;
+    if (action === 'refund') {
+      const upi = document.getElementById('upi-id').value.trim();
+      const name = document.getElementById('acc-name').value.trim();
+      const num  = document.getElementById('acc-number').value.trim();
+      const ifsc = document.getElementById('ifsc').value.trim();
+
+      const bankOK = name && num && ifsc;
+      if (!upi && !bankOK) {
+        e.preventDefault();
+        alert('Please provide either a UPI ID OR complete bank details (name, account number, IFSC) for refund.');
+      }
+    }
+  });
 </script>
 
 {% endblock %}
