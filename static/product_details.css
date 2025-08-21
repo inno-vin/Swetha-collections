@@ -370,16 +370,27 @@ html, body { overflow-x: hidden; }
 .container, .product-images { overflow-x: hidden; }
 
 /* Stop images from being draggable/pannable horizontally */
-.main-product-image,
-.thumbnail-gallery img {
-  -webkit-user-drag: none;   /* iOS Safari */
+/* Keep main product image from dragging horizontally */
+.main-product-image {
+  -webkit-user-drag: none;
   user-select: none;
-  touch-action: pan-y;        /* allow vertical scroll only on images */
-  display: block;             /* removes inline-img gaps */
+  touch-action: pan-y;   /* vertical scroll only */
+  display: block;
 }
 
-/* Keep the horizontal scroll contained to the thumbnails strip */
+/* Thumbnails: allow horizontal scrolling */
 .thumbnail-gallery {
-  overscroll-behavior-x: contain;  /* prevents page from catching the swipe */
+  overflow-x: auto;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;   /* ← allow horizontal swipes */
+}
+
+.thumbnail-gallery img {
+  -webkit-user-drag: none;
+  user-select: none;
+  touch-action: auto;    /* don’t block horizontal scroll */
+  flex: 0 0 auto;
+  display: block;
 }
