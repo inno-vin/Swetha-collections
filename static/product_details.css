@@ -363,3 +363,23 @@ body {
   }
 }
 
+/* Never allow horizontal overflow on the page */
+html, body { overflow-x: hidden; }
+
+/* Keep the product area from bleeding */
+.container, .product-images { overflow-x: hidden; }
+
+/* Stop images from being draggable/pannable horizontally */
+.main-product-image,
+.thumbnail-gallery img {
+  -webkit-user-drag: none;   /* iOS Safari */
+  user-select: none;
+  touch-action: pan-y;        /* allow vertical scroll only on images */
+  display: block;             /* removes inline-img gaps */
+}
+
+/* Keep the horizontal scroll contained to the thumbnails strip */
+.thumbnail-gallery {
+  overscroll-behavior-x: contain;  /* prevents page from catching the swipe */
+  -webkit-overflow-scrolling: touch;
+}
