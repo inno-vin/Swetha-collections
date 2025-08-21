@@ -233,6 +233,7 @@ body {
   max-width: 420px;
   margin: 8px auto 0;
   padding: 0 2px 6px;
+    order: 2;  /* put thumbnails after the main image */
 }
 .thumbnail-gallery img {
   flex: 0 0 auto;          /* don't shrink */
@@ -344,19 +345,21 @@ body {
 }
 .share-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 /* For mobile: push thumbnails below main image */
+/* For mobile: push thumbnails below main image */
 @media (max-width: 768px) {
-  .thumbnails-container {
-    order: 2;   /* move thumbnails after main image */
+  .product-images {
+    display: flex;
+    flex-direction: column;  /* stack vertically */
+    align-items: center;
+  }
+
+  .main-image {
+    order: 1;   /* show first */
+  }
+
+  .thumbnail-gallery {
+    order: 2;   /* show after main image */
     margin-top: 10px;
   }
-
-  .main-image-container {
-    order: 1;   /* keep main image first */
-  }
-
-  /* Ensure they stack vertically */
-  .product-gallery {
-    display: flex;
-    flex-direction: column;
-  }
 }
+
