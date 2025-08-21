@@ -218,6 +218,23 @@ class Order(models.Model):
 
     def __str__(self):
         return f"Order {self.order_id} by {self.customer}"
+    
+class OrderCancellation(models.Model):
+    order = models.OneToOneField("store.Order", on_delete=models.CASCADE, related_name="cancellation")
+    reason = models.TextField(null=True, blank=True)
+    action = models.CharField(
+        max_length=20,
+        choices=[("refund", "Refund"), ("reorder", "Reorder")],
+        null=True, blank=True,
+    )
+    refund_upi_id = models.CharField(max_length=100, null=True, blank=True)
+    refund_bank_account_name = models.CharField(max_length=200, null=True, blank=True)
+    refund_bank_account_number = models.CharField(max_length=50, null=True, blank=True)
+    refund_bank_ifsc = models.CharField(max_length=20, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Cancellation for {self.order.order_id}"
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="items")

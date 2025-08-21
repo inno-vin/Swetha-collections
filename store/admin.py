@@ -1,6 +1,8 @@
 from django.contrib import admin
 from store import models as store_models
 from .models import Order, OrderItem
+
+from .models import OrderCancellation
 # Inline Gallery to appear inside Product Admin
 class GalleryInline(admin.TabularInline):  
     model = store_models.Gallery
@@ -77,6 +79,15 @@ class OrderAdmin(admin.ModelAdmin):
     search_fields = ('order_id', 'customer__username', 'tracking_id')
     list_filter = ('status', 'date')
     inlines = [OrderItemInline]
+
+
+
+
+@admin.register(OrderCancellation)
+class OrderCancellationAdmin(admin.ModelAdmin):
+    list_display = ("order", "action", "created_at")
+    search_fields = ("order__order_id", "refund_upi_id", "refund_bank_ifsc")
+
 
 # Register Models in Django Admin
 admin.site.register(store_models.Category, CategoryAdmin)

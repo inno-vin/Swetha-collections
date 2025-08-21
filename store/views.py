@@ -736,6 +736,7 @@ def add_review(request):
 # from .models import Order  # adjust import
 
 
+from store.models import OrderCancellation  # add this import
 
 @login_required
 def cancel_order(request):
@@ -751,7 +752,7 @@ def cancel_order(request):
     bank_num  = (request.POST.get("bank_account_number") or "").strip()
     bank_ifsc = (request.POST.get("bank_ifsc") or "").strip()
 
-    # ✅ use customer=... (matches checkout creation)
+    # Your orders are created with customer=request.user earlier
     order = get_object_or_404(Order, order_id=order_id, customer=request.user)
 
     blocked_states = {"delivered", "completed", "cancelled", "returned", "refund issued"}
@@ -765,19 +766,22 @@ def cancel_order(request):
         messages.error(request, "This order cannot be cancelled at its current status.")
         return redirect("userauths:account")
 
-    # store details on the order
-    order.cancellation_reason = reason
-    order.cancellation_action = action
-    order.refund_upi_id = upi_id or None
-    order.refund_bank_account_name = bank_name or None
-    order.refund_bank_account_number = bank_num or None
-    order.refund_bank_ifsc = bank_ifsc or None
+    # 1) Update order status only
     order.status = "Cancellation Requested"
-    order.save(update_fields=[
-        "cancellation_reason", "cancellation_action",
-        "refund_upi_id", "refund_bank_account_name",
-        "refund_bank_account_number", "refund_bank_ifsc", "status"
-    ])
+    order.save(update_fields=["status"])
+
+    # 2) Upsert cancellation details in a separate table
+    OrderCancellation.objects.update_or_create(
+        order=order,
+        defaults={
+            "reason": reason,
+            "action": action,
+            "refund_upi_id": upi_id or None,
+            "refund_bank_account_name": bank_name or None,
+            "refund_bank_account_number": bank_num or None,
+            "refund_bank_ifsc": bank_ifsc or None,
+        },
+    )
 
     if action == "reorder":
         messages.success(request, "Cancellation requested. You can place a new order now.")

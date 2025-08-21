@@ -78,6 +78,23 @@
             <h3>Order ID: <strong>{{ order.order_id }}</strong></h3>
 
             <p><strong>Status:</strong> {{ order.status }}</p>
+            {% if order.cancellation %}
+  <div class="cxl-note" style="margin:8px 0; padding:8px 10px; border-left:4px solid #6a0dad; background:#f8f5fb; border-radius:6px;">
+    <strong>Cancellation:</strong>
+    {{ order.cancellation.action|title }} — {{ order.cancellation.reason|default:"(no reason provided)" }}
+    {% if order.cancellation.action == "refund" %}
+      <br>
+      <small>
+        {% if order.cancellation.refund_upi_id %}
+          UPI: {{ order.cancellation.refund_upi_id }}
+        {% elif order.cancellation.refund_bank_account_name and order.cancellation.refund_bank_account_number and order.cancellation.refund_bank_ifsc %}
+          Bank: {{ order.cancellation.refund_bank_account_name }} • {{ order.cancellation.refund_bank_account_number }} • {{ order.cancellation.refund_bank_ifsc }}
+        {% endif %}
+      </small>
+    {% endif %}
+  </div>
+{% endif %}
+
 
             <p><strong>Tracking ID:</strong>
               {% if order.tracking_id %}
@@ -120,14 +137,15 @@
                       </button>
 
                       {# Cancel/Refund button shown only for cancellable states #}
-                      {% if order.status != "Delivered" and order.status != "Completed" and order.status != "Cancelled" %}
+                      {% if order.status != "Delivered" and order.status != "Completed" and order.status != "Cancelled" and order.status != "Cancellation Requested" %}
+
                         <button
                           type="button"
                           class="btn btn-sm btn-outline-primary cancel-order-btn"
                           style="margin-top:10px; border:2px solid #6a0dad; border-radius:6px; background-color:white; color:#6a0dad; font-weight:bold;"
                           data-order-id="{{ order.order_id }}"
                           data-order-total="{{ order.total }}">
-                          ✖ Cancel / Refund
+                          ✖ Cancel 
                         </button>
                       {% else %}
                         <div class="delivered-note" style="margin-top:10px; font-weight:600;">
