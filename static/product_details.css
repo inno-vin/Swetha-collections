@@ -448,3 +448,39 @@ html, body { overflow-x: hidden; }
   .main-image { order: 1; }
   .thumbnail-gallery { order: 2; }
 }
+/* ===== MOBILE-ONLY FINAL TWEAKS (gallery only) ===== */
+@media (max-width: 768px) {
+  /* 1) Keep the main image safely inside the viewport */
+  .product-images { width: 100%; align-items: center; min-width: 0; }
+  .main-image {
+    width: min(100%, 430px);
+    margin: 6px auto 8px;
+    position: relative;
+    overflow: hidden;
+    border-radius: 12px;
+  }
+  .main-image .main-product-image {
+    display: block;
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+    /* prevent horizontal drag causing page nudge */
+    -webkit-user-drag: none;
+    user-select: none;
+    touch-action: pan-y;
+  }
+
+  /* 2) Thumbnails: keep a slim row, fully scroll to the last item */
+  .thumbnail-gallery {
+    justify-content: flex-start;     /* never recenter during scroll */
+    padding: 0 12px 6px 12px;        /* a bit more end padding */
+  }
+  .thumbnail-gallery::after {
+    content: "";
+    flex: 0 0 16px;                  /* larger spacer so last thumb is fully visible */
+  }
+
+  /* If snap is making the final thumb stick, disable strict snapping */
+  .thumbnail-gallery { scroll-snap-type: x proximity; } /* or change to 'none' if you prefer */
+}
