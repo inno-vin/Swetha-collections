@@ -1,83 +1,75 @@
-document.addEventListener("DOMContentLoaded", function () {
-    document.querySelectorAll(".qty-btn").forEach(button => {
-        button.addEventListener("click", function () {
-            const isIncrement = this.textContent.trim() === "+";
-            const row = this.closest(".cart-card");
+// cart.js — for Cart page increment/decrement
 
-            const itemId = row.getAttribute("data-id");
-            const size = row.getAttribute("data-size");
-            const color = row.getAttribute("data-color");
-            const image = row.getAttribute("data-image");
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".cart-card .qty-btn").forEach(btn => {
+    btn.addEventListener("click", function () {
+      const row = this.closest(".cart-card");
+      if (!row) return;
 
-            const data = {
-                id: itemId,
-                qty: isIncrement ? 1 : -1,
-                size: size,
-                color: color,
-                image: image
-            };
+      const itemId = row.getAttribute("data-id");   // CartItem.id
+      const isInc = this.textContent.trim() === "+";
+      const action = isInc ? "inc" : "dec";
 
-            fetch("/add-to-cart/", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": getCookie("csrftoken")
-                },
-                body: JSON.stringify(data)
-            })
-            .then(async response => {
-                if (response.status === 401) {
-                    window.location.href = "/auth/login/";
-                    return;
-                }
+      fetch("/update-cart-qty/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: JSON.stringify({ item_id: itemId, action })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status !== "success") {
+          alert("Error: " + (data.message || "Could not update cart"));
+          return;
+        }
 
-                const data = await response.json();
+        // update qty
+        const qtyInput = row.querySelector("input[type='number']");
+        if (qtyInput) qtyInput.value = data.item_qty;
 
-                if (data.status === "unauthenticated") {
-                    window.location.href = data.login_url || "/auth/login/";
-                    return;
-                } else if (data.status === "success") {
-                    // ✅ Update quantity in input
-                    const qtyInput = row.querySelector("input[type='number']");
-                    qtyInput.value = data.item_qty;
+        // update item total
+        const totalEl = row.querySelector(".item-total");
+        if (totalEl) totalEl.textContent = "₹" + formatINR(data.item_total);
 
-                    // ✅ Update item total
-                    row.querySelector(".item-total").textContent = "₹" + data.item_total;
-
-                    // ✅ Update summary (Subtotal and Total)
-                    const summary = document.querySelector(".summary");
-                    if (summary) {
-                        const subtotalEl = summary.querySelector("p:nth-child(2)");
-                        const totalEl = summary.querySelector("p strong");
-
-                        if (subtotalEl) subtotalEl.textContent = "Subtotal: ₹" + data.subtotal;
-                        if (totalEl) totalEl.textContent = "Total: ₹" + data.grand_total;
-                    }
-
-                    showToast(data.message, "success");
-                } else {
-                    alert("Error: " + (data.message || "Unknown error"));
-                }
-            })
-            .catch(error => {
-                console.error("Request failed:", error);
-                alert("Something went wrong while updating cart.");
-            });
-        });
+        // update summary
+        document.querySelector(".summary").innerHTML = `
+          <h3>Order Summary</h3>
+          <p>Subtotal: ₹${formatINR(data.subtotal)}</p>
+          <p>Free Shipping</p>
+          <p>Tax: ₹0</p>
+          <hr>
+          <p><strong>Total: ₹${formatINR(data.grand_total)}</strong></p>
+          <form action="/checkout/" method="get">
+              <button type="submit" class="checkout-btn">Proceed To Checkout →</button>
+          </form>
+        `;
+      })
+      .catch(err => {
+        console.error(err);
+        alert("Something went wrong while updating the cart.");
+      });
     });
+  });
 });
 
+/* ---------- helpers ---------- */
 function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== "") {
-        const cookies = document.cookie.split(";");
-        for (let cookie of cookies) {
-            cookie = cookie.trim();
-            if (cookie.startsWith(name + "=")) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + "=")) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
     }
-    return cookieValue;
+  }
+  return cookieValue;
+}
+
+function formatINR(val) {
+  return Number(val).toLocaleString("en-IN", { maximumFractionDigits: 2 });
 }
