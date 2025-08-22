@@ -2,9 +2,7 @@
 
 {% load static %}
 
-{% block title %}
- main_page
-{% endblock %}
+
 
 {% block content %}
 
@@ -55,7 +53,7 @@
     <h2>Trending Categories <span class="emoji">🔷</span></h2>
     <div class="categories-container" style="display: flex; gap: 20px; flex-wrap: wrap;">
         {% for cate in categories %}
-           <a href="{% url 'store:shop' %}?category={{ cate.cid }}" style="text-decoration: none; color: inherit;">
+           <a href="{% url 'store:shop' %}?category={{ cate.cid }}" class="fade-in-up"style="text-decoration: none; color: inherit;">
 
            
                 <div class="category" style="text-align: center;">
@@ -82,7 +80,7 @@
 
     {% for p in products %} 
          
-        <div class="product-card">
+        <div class="product-card fade-in-up">
             <div class="imgb">
            <a href="{% url 'store:product_detail' p.slug %}"> <img src="{{ p.image.url }}" alt="Beats Speaker"></a>  
         </div>
@@ -158,5 +156,23 @@
 
     </div>
 </section>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("visible");
+        observer.unobserve(entry.target); // animate once
+      }
+    });
+  }, { threshold: 0.2 });
+
+  document.querySelectorAll(".fade-in-up").forEach(el => {
+    observer.observe(el);
+  });
+});
+</script>
+
 
 {% endblock %}
