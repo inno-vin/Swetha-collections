@@ -37,14 +37,31 @@ document.addEventListener("DOMContentLoaded", function () {
                     window.location.href = data.login_url || "/auth/login/";
                     return;
                 } else if (data.status === "success") {
-                   showToast(data.message, "success");
+                    // ✅ Update quantity in input
+                    const qtyInput = row.querySelector("input[type='number']");
+                    qtyInput.value = data.item_qty;
+
+                    // ✅ Update item total
+                    row.querySelector(".item-total").textContent = "₹" + data.item_total;
+
+                    // ✅ Update summary (Subtotal and Total)
+                    const summary = document.querySelector(".summary");
+                    if (summary) {
+                        const subtotalEl = summary.querySelector("p:nth-child(2)");
+                        const totalEl = summary.querySelector("p strong");
+
+                        if (subtotalEl) subtotalEl.textContent = "Subtotal: ₹" + data.subtotal;
+                        if (totalEl) totalEl.textContent = "Total: ₹" + data.grand_total;
+                    }
+
+                    showToast(data.message, "success");
                 } else {
                     alert("Error: " + (data.message || "Unknown error"));
                 }
             })
             .catch(error => {
                 console.error("Request failed:", error);
-                alert("Something went wrong while adding to cart.");
+                alert("Something went wrong while updating cart.");
             });
         });
     });

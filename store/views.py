@@ -68,7 +68,6 @@ def product_detail(request, slug):
         "color_variants": color_variants,
     })
 
-
 @csrf_exempt
 def add_to_cart(request):
     if request.method == "POST":
@@ -78,7 +77,7 @@ def add_to_cart(request):
             qty = int(data.get("qty", 1))
             size = data.get("size")
             color = data.get("color")
-            image_url = data.get("image")  # ✅ Get image URL from frontend
+            image_url = data.get("image")
 
             if not product_id:
                 return JsonResponse({"status": "error", "message": "Product ID is missing!"}, status=400)
@@ -97,14 +96,13 @@ def add_to_cart(request):
             ).first()
 
             if not existing:
-                # ✅ Save image URL if present
                 cart_item = Cart.objects.create(
                     product=product,
-                    qty=qty,
+                    qty=max(qty, 1),
                     price=product.price,
-                    sub_total=Decimal(product.price) * qty,
+                    sub_total=Decimal(product.price) * max(qty, 1),
                     shipping=Decimal(product.shipping),
-                    total=Decimal(product.price) * qty + Decimal(product.shipping),
+                    total=Decimal(product.price) * max(qty, 1) + Decimal(product.shipping),
                     size=size,
                     color=color,
                     user=cart_user,
@@ -115,21 +113,38 @@ def add_to_cart(request):
                     from urllib.request import urlopen
                     from django.core.files.base import ContentFile
                     import os
-
                     image_data = urlopen(image_url).read()
                     file_name = os.path.basename(image_url)
                     cart_item.image.save(file_name, ContentFile(image_data), save=True)
 
+                cart_item.save()
+                target_item = cart_item
                 message = "Item added to cart!"
             else:
                 existing.qty += qty
+                if existing.qty < 1:
+                    existing.qty = 1  # prevent going below 1
                 existing.sub_total = Decimal(product.price) * existing.qty
                 existing.shipping = Decimal(product.shipping)
                 existing.total = existing.sub_total + existing.shipping
                 existing.save()
-                message = "Item quantity updated in cart!"
+                target_item = existing
+                message = "Item quantity updated!"
 
-            return JsonResponse({"status": "success", "message": message})
+            # 🟢 Calculate cart totals
+            cart_items = Cart.objects.filter(user=cart_user)
+            subtotal = sum(item.sub_total for item in cart_items)
+            shipping_total = sum(item.shipping for item in cart_items)
+            grand_total = subtotal + shipping_total
+
+            return JsonResponse({
+                "status": "success",
+                "message": message,
+                "item_qty": target_item.qty,
+                "item_total": float(target_item.total),
+                "subtotal": float(subtotal),
+                "grand_total": float(grand_total),
+            })
 
         except Product.DoesNotExist:
             return JsonResponse({"status": "error", "message": "Product not found!"}, status=404)
