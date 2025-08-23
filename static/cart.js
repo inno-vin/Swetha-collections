@@ -4,20 +4,22 @@ document.addEventListener("DOMContentLoaded", function () {
             const isIncrement = this.textContent.trim() === "+";
             const row = this.closest(".cart-card");
 
-            const itemId = row.getAttribute("data-id");
+            // ✅ Correct IDs
+            const productId = row.getAttribute("data-product-id");
+            const cartId = row.getAttribute("data-cart-id");
             const size = row.getAttribute("data-size");
             const color = row.getAttribute("data-color");
             const image = row.getAttribute("data-image");
 
             const data = {
-                id: itemId,
+                id: productId,
+                cart_id: cartId,
                 qty: isIncrement ? 1 : -1,
                 size: size,
                 color: color,
                 image: image
             };
 
-            // ✅ Always use /add-to-cart/ now
             fetch("/add-to-cart/", {
                 method: "POST",
                 headers: {
@@ -39,10 +41,10 @@ document.addEventListener("DOMContentLoaded", function () {
                     return;
                 } else if (data.status === "success") {
                     if (data.removed) {
-                        // 🗑️ remove row if item deleted
+                        // 🗑 remove item row if backend says deleted
                         row.remove();
                     } else {
-                        // ✅ Update quantity in input
+                        // ✅ Update qty input
                         const qtyInput = row.querySelector("input[type='number']");
                         qtyInput.value = data.item_qty;
 
@@ -50,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         row.querySelector(".item-total").textContent = "₹" + data.item_total;
                     }
 
-                    // ✅ Update summary (Subtotal and Total)
+                    // ✅ Update summary
                     const summary = document.querySelector(".summary");
                     if (summary) {
                         const subtotalEl = summary.querySelector("p:nth-child(2)");

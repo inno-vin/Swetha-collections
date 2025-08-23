@@ -8,11 +8,13 @@
     <div class="cart-grid">
         <div class="cart-items">
             {% for item in cart_items %}
-            <div class="cart-card"
-                data-id="{{ item.id }}"
-                data-size="{{ item.size|default:'' }}"
-                data-color="{{ item.color|default:'' }}"
-                data-image="{% if item.image %}{{ item.image.url }}{% else %}{{ item.product.image.url }}{% endif %}">
+           <div class="cart-card"
+    data-product-id="{{ item.product.id }}"
+    data-cart-id="{{ item.id }}"
+    data-size="{{ item.size|default:'' }}"
+    data-color="{{ item.color|default:'' }}"
+    data-image="{% if item.image %}{{ item.image.url }}{% else %}{{ item.product.image.url }}{% endif %}">
+
 
                 <div class="item-img">
                     {% if item.image %}
