@@ -17,8 +17,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 image: image
             };
 
-            fetch(isIncrement ? "/add-to-cart/" : "/remove-from-cart/", {
-
+            // ✅ Always use /add-to-cart/ now
+            fetch("/add-to-cart/", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -38,12 +38,17 @@ document.addEventListener("DOMContentLoaded", function () {
                     window.location.href = data.login_url || "/auth/login/";
                     return;
                 } else if (data.status === "success") {
-                    // ✅ Update quantity in input
-                    const qtyInput = row.querySelector("input[type='number']");
-                    qtyInput.value = data.item_qty;
+                    if (data.removed) {
+                        // 🗑️ remove row if item deleted
+                        row.remove();
+                    } else {
+                        // ✅ Update quantity in input
+                        const qtyInput = row.querySelector("input[type='number']");
+                        qtyInput.value = data.item_qty;
 
-                    // ✅ Update item total
-                    row.querySelector(".item-total").textContent = "₹" + data.item_total;
+                        // ✅ Update item total
+                        row.querySelector(".item-total").textContent = "₹" + data.item_total;
+                    }
 
                     // ✅ Update summary (Subtotal and Total)
                     const summary = document.querySelector(".summary");

@@ -122,8 +122,26 @@ def add_to_cart(request):
                 message = "Item added to cart!"
             else:
                 existing.qty += qty
-                if existing.qty < 1:
-                    existing.qty = 1  # prevent going below 1
+                if existing.qty <= 0:
+                    existing.delete()
+
+                    # 🟢 Recalculate cart totals
+                    cart_items = Cart.objects.filter(user=cart_user)
+                    subtotal = sum(item.sub_total for item in cart_items)
+                    shipping_total = sum(item.shipping for item in cart_items)
+                    grand_total = subtotal + shipping_total
+
+                    return JsonResponse({
+                        "status": "success",
+                        "message": "Item removed from cart",
+                        "item_qty": 0,
+                        "item_total": 0,
+                        "subtotal": float(subtotal),
+                        "grand_total": float(grand_total),
+                        "removed": True,
+                    })
+
+                # ✅ If qty still > 0, update normally
                 existing.sub_total = Decimal(product.price) * existing.qty
                 existing.shipping = Decimal(product.shipping)
                 existing.total = existing.sub_total + existing.shipping
