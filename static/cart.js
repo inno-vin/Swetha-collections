@@ -17,7 +17,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 image: image
             };
 
-            fetch("/add-to-cart/", {
+            fetch(isIncrement ? "/add-to-cart/" : "/remove-from-cart/", {
+
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
