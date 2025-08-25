@@ -203,8 +203,8 @@ CKEDITOR_5_CONFIGS = {
 }
 
 # Razorpay
-RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "")
-RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "rzp_live_R9SaOdlqv7cuVX")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "IiWuUpbCGDYB67wLdbZENsPr")
 
 # Email (Gmail SMTP)
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

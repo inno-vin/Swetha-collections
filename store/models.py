@@ -205,9 +205,10 @@ class Order(models.Model):
 
     payment_method = models.CharField(
         max_length=50,
-        choices=[("COD", "Cash on Delivery"), ("Card", "Credit/Debit Card"), ("UPI", "UPI")],
+        choices=[("COD", "Cash on Delivery"), ("Card", "Credit/Debit Card"), ("UPI", "UPI"), ("Razorpay", "Razorpay")],
         default="COD"
     )
+
     
     payment_id = models.CharField(max_length=100, null=True, blank=True)
     razorpay_order_id = models.CharField(max_length=100, null=True, blank=True)

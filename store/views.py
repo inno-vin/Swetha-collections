@@ -391,10 +391,11 @@ Thank you for shopping with us!
             order.razorpay_order_id = razorpay_order['id']
             order.save()
             return render(request, "store/payment.html", {
-                "razorpay_order_id": razorpay_order['id'],
+                "order_id": razorpay_order['id'],   # 🔑 renamed
                 "razorpay_key": settings.RAZORPAY_KEY_ID,
                 "amount": int(total * 100),
             })
+
 
     # ✅ On GET request, show checkout page with prefilled profile
     return render(request, "store/checkout.html", {
