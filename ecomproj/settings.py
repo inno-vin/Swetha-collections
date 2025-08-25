@@ -218,8 +218,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'swethacollections48@gmail.com'     # <- fix .com
-EMAIL_HOST_PASSWORD = 'nhaqfrsrddidevad'              # <- 16 chars, NO SPACES
+EMAIL_HOST_USER = 'swethacollections48@gmail.com'     
+EMAIL_HOST_PASSWORD = 'nnreymvlxkimrnsw'              
 DEFAULT_FROM_EMAIL = 'Swetha Collections <swethacollections48@gmail.com>'
 
 
