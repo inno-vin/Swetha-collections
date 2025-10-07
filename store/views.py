@@ -376,7 +376,34 @@ Thank you for shopping with us!
 
 – Swetha Collections
 """
-        send_mail("Order Confirmation", message, settings.EMAIL_HOST_USER, [request.user.email])
+        # Send to user
+        send_mail(
+            "Order Confirmation",
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [request.user.email]
+        )
+
+        # Send to admin
+        admin_message = f"""
+        New Order Received 🚨
+
+        Order ID: {order.order_id}
+        Customer: {request.user.username} ({request.user.email})
+
+        Items:
+        {order_items}
+
+        Total: ₹{order.total}
+        Payment Method: {order.payment_method}
+        """
+        send_mail(
+            "New Order Notification",
+            admin_message,
+            settings.DEFAULT_FROM_EMAIL,
+            ["swethacollections48@gmail.com","philemon0714@gmail.com"]   # your admin email
+        )
+
         cart_items.delete()
 
         if payment_method == "COD":
