@@ -76,7 +76,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': os.getenv('DB_NAME', 'postgres'),   # default DB in RDS
         'USER': os.getenv('DB_USER', 'vinay'),
-        'PASSWORD': os.getenv('Swetha-collections', ''),
+        'PASSWORD': os.getenv('DB_PASSWORD','Swetha-collections'),
         'HOST': os.getenv('DB_HOST', 'sc-database.cvum0use4w8m.eu-north-1.rds.amazonaws.com'),
         'PORT': os.getenv('DB_PORT', '5432'),
     }
