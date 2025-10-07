@@ -61,12 +61,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ecomproj.wsgi.application'
 
+# DATABASES = {
+#     "default": dj_database_url.config(
+#         env="DATABASE_URL",
+#         default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+#         conn_max_age=600,
+#     )
+# }
+
+import os
+
 DATABASES = {
-    "default": dj_database_url.config(
-        env="DATABASE_URL",
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
-        conn_max_age=600,
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME', 'postgres'),   # default DB in RDS
+        'USER': os.getenv('DB_USER', 'vinay'),
+        'PASSWORD': os.getenv('Swetha-collections', ''),
+        'HOST': os.getenv('DB_HOST', 'sc-database.cvum0use4w8m.eu-north-1.rds.amazonaws.com'),
+        'PORT': os.getenv('DB_PORT', '5432'),
+    }
 }
 
 AUTH_PASSWORD_VALIDATORS = [
