@@ -305,7 +305,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 import logging, uuid, razorpay
 
-from .models import Cart, Order, OrderItem, Profile
+# from .models import Cart, Order, OrderItem, Profile
 # from .utils import safe_image_url  # assuming this exists
 
 logger = logging.getLogger(__name__)
