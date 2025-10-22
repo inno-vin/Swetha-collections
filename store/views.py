@@ -298,10 +298,23 @@ def safe_image_url(image_field, request):
         pass
     return request.build_absolute_uri('/static/images/placeholder.jpg')  # Ensure this file exists
 
+from django.conf import settings
+from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail, BadHeaderError
+from django.shortcuts import render, redirect
+from django.contrib import messages
+import logging, uuid, razorpay
+
+from .models import Cart, Order, OrderItem, Profile
+from .utils import safe_image_url  # assuming this exists
+
+logger = logging.getLogger(__name__)
+
 @login_required
 def checkout_view(request):
     cart_items = Cart.objects.filter(user=request.user)
     if not cart_items.exists():
+        messages.warning(request, "Your cart is empty!")
         return redirect('store:cart')
 
     subtotal = sum(item.sub_total for item in cart_items)
@@ -311,8 +324,8 @@ def checkout_view(request):
     # ✅ Create or fetch user profile
     profile, _ = Profile.objects.get_or_create(user=request.user)
 
-    # ✅ Save address if submitted
     if request.method == "POST":
+        # ✅ Save or update address
         profile.full_name = request.POST.get("full_name")
         profile.mobile = request.POST.get("mobile")
         profile.address = request.POST.get("address")
@@ -322,9 +335,8 @@ def checkout_view(request):
         profile.country = request.POST.get("country")
         profile.save()
 
-        # Continue with order
+        # ✅ Create order
         payment_method = request.POST.get("payment_method")
-
         order = Order.objects.create(
             customer=request.user,
             order_id=uuid.uuid4().hex[:10].upper(),
@@ -335,6 +347,7 @@ def checkout_view(request):
             payment_status="Pending" if payment_method != "COD" else "Paid"
         )
 
+        # ✅ Create order items
         for item in cart_items:
             image_to_save = (
                 item.image if item.image and item.image.name else
@@ -353,7 +366,7 @@ def checkout_view(request):
                 image=image_to_save
             )
 
-        # Email Confirmation
+        # ✅ Compose email message
         order_items = "\n\n".join([
             f"{item.product.name}\n"
             f"Color: {item.color or 'N/A'} | Size: {item.size or 'N/A'}\n"
@@ -376,12 +389,30 @@ Thank you for shopping with us!
 
 – Swetha Collections
 """
-        send_mail("Order Confirmation", message, settings.EMAIL_HOST_USER, [request.user.email])
+
+        # ✅ Send email safely (prevent crash)
+        try:
+            send_mail(
+                "Order Confirmation",
+                message,
+                settings.DEFAULT_FROM_EMAIL,
+                [request.user.email],
+                fail_silently=False
+            )
+        except (BadHeaderError, Exception) as e:
+            logger.error(f"❌ Email sending failed for order {order.order_id}: {e}")
+            messages.warning(request, "Your order was placed successfully, but the confirmation email could not be sent.")
+
+        # ✅ Clear cart after processing
         cart_items.delete()
 
+        # ✅ COD orders
         if payment_method == "COD":
+            messages.success(request, "Your order has been placed successfully!")
             return redirect("store:order_success")
-        else:
+
+        # ✅ Online payment (Razorpay)
+        try:
             client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
             razorpay_order = client.order.create({
                 "amount": int(total * 100),
@@ -395,8 +426,12 @@ Thank you for shopping with us!
                 "razorpay_key": settings.RAZORPAY_KEY_ID,
                 "amount": int(total * 100),
             })
+        except Exception as e:
+            logger.error(f"⚠️ Razorpay order creation failed: {e}")
+            messages.error(request, "There was an issue connecting to Razorpay. Please try again later.")
+            return redirect("store:checkout")
 
-    # ✅ On GET request, show checkout page with prefilled profile
+    # ✅ GET request – show prefilled checkout form
     return render(request, "store/checkout.html", {
         "cart_items": cart_items,
         "subtotal": subtotal,
@@ -404,7 +439,6 @@ Thank you for shopping with us!
         "grand_total": total,
         "profile": profile,
     })
-    
 
 # Order success page
 @login_required
