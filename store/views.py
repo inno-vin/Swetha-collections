@@ -376,34 +376,7 @@ Thank you for shopping with us!
 
 – Swetha Collections
 """
-        # Send to user
-        send_mail(
-            "Order Confirmation",
-            message,
-            settings.DEFAULT_FROM_EMAIL,
-            [request.user.email]
-        )
-
-        # Send to admin
-        admin_message = f"""
-        New Order Received 🚨
-
-        Order ID: {order.order_id}
-        Customer: {request.user.username} ({request.user.email})
-
-        Items:
-        {order_items}
-
-        Total: ₹{order.total}
-        Payment Method: {order.payment_method}
-        """
-        send_mail(
-            "New Order Notification",
-            admin_message,
-            settings.DEFAULT_FROM_EMAIL,
-            ["swethacollections48@gmail.com","philemon0714@gmail.com"]   # your admin email
-        )
-
+        send_mail("Order Confirmation", message, settings.EMAIL_HOST_USER, [request.user.email])
         cart_items.delete()
 
         if payment_method == "COD":
@@ -418,11 +391,10 @@ Thank you for shopping with us!
             order.razorpay_order_id = razorpay_order['id']
             order.save()
             return render(request, "store/payment.html", {
-                "order_id": razorpay_order['id'],   # 🔑 renamed
+                "razorpay_order_id": razorpay_order['id'],
                 "razorpay_key": settings.RAZORPAY_KEY_ID,
                 "amount": int(total * 100),
             })
-
 
     # ✅ On GET request, show checkout page with prefilled profile
     return render(request, "store/checkout.html", {
@@ -432,7 +404,7 @@ Thank you for shopping with us!
         "grand_total": total,
         "profile": profile,
     })
-
+    
 
 # Order success page
 @login_required
