@@ -1,2 +1,1 @@
-web: gunicorn ecomproj.wsgi:application
-
+web: gunicorn ecomproj.wsgi:application --chdir ecomproj
