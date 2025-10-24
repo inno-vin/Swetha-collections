@@ -1,0 +1,107 @@
+/* ===== Thank You (scoped) ===== */
+:root {
+  --primary:  #6a0dad;      /* Indigo */
+  --primary-600: #5c0c95;
+  --surface: #ffffff;
+  --bg: #f5f7fb;
+  --text: #0f172a;         /* Slate-900 */
+  --muted: #475569;        /* Slate-600 */
+  --border: #e5e7eb;       /* Gray-200 */
+  --success: #16a34a;
+  --shadow: 0 12px 32px rgba(17, 24, 39, 0.08);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.container.thankyou {
+  max-width: 980px;
+  margin: 96px auto;
+  padding: 0 24px;
+}
+
+/* Card */
+.container.thankyou {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 40px 48px;
+  text-align: center;
+}
+
+/* Title */
+.container.thankyou h2 {
+  font-size: 28px;
+  line-height: 1.25;
+  margin: 0 0 12px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* Optional success accent for the emoji */
+.container.thankyou h2::before {
+  content: "✔";
+  display: inline-grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-right: 10px;
+  border-radius: 50%;
+  background: rgba(22, 163, 74, 0.08);
+  color: var(--success);
+  font-size: 18px;
+  vertical-align: middle;
+}
+
+/* Body copy */
+.container.thankyou p {
+  margin: 6px 0;
+  color: var(--muted);
+  font-size: 16px;
+}
+
+/* Button (works with Bootstrap or without) */
+.container.thankyou .btn,
+.container.thankyou .btn-primary {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 10px 18px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  background: var(--primary);
+  color: #fff;
+  text-decoration: none;
+  transition: transform .05s ease, background-color .2s ease, border-color .2s ease, box-shadow .2s ease;
+  box-shadow: 0 2px 8px rgba(79, 70, 229, 0.25);
+}
+
+.container.thankyou .btn:hover,
+.container.thankyou .btn-primary:hover {
+  background: var(--primary-600);
+  transform: translateY(-1px);
+}
+
+.container.thankyou .btn:active,
+.container.thankyou .btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .container.thankyou {
+    padding: 28px 20px;
+    margin: 64px 16px;
+    border-radius: 14px;
+  }
+  .container.thankyou h2 {
+    font-size: 22px;
+  }
+}
+

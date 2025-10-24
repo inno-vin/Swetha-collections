@@ -1,0 +1,44 @@
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 2rem;
+}
+
+.order-title {
+  margin-bottom: 2rem;
+}
+
+.order-card {
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+.order-items {
+  margin-top: 1rem;
+}
+
+.order-item {
+  display: flex;
+  align-items: center;
+  margin-top: 10px;
+  border-top: 1px solid #eee;
+  padding-top: 10px;
+}
+
+.order-item img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  margin-right: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+}
+
+.item-name {
+  font-weight: bold;
+  margin: 0;
+}
