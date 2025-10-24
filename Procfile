@@ -1,1 +1,1 @@
-web: gunicorn ecomproj.wsgi --bind 0.0.0.0:$PORT
+web: gunicorn ecomproj.wsgi:application --bind 0.0.0.0:$PORT
