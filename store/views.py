@@ -366,42 +366,46 @@ def checkout_view(request):
                 image=image_to_save
             )
 
-        # ✅ Compose email message
-        order_items = "\n\n".join([
-            f"{item.product.name}\n"
-            f"Color: {item.color or 'N/A'} | Size: {item.size or 'N/A'}\n"
-            f"Qty: {item.qty} × ₹{item.price:.2f} = ₹{item.sub_total:.2f}\n"
-            f"Image: {safe_image_url(item.image or item.product.image, request)}"
-            for item in cart_items
-        ])
+#         # ✅ Compose email message
+#         order_items = "\n\n".join([
+#             f"{item.product.name}\n"
+#             f"Color: {item.color or 'N/A'} | Size: {item.size or 'N/A'}\n"
+#             f"Qty: {item.qty} × ₹{item.price:.2f} = ₹{item.sub_total:.2f}\n"
+#             f"Image: {safe_image_url(item.image or item.product.image, request)}"
+#             for item in cart_items
+#         ])
 
-        message = f"""Dear {request.user.username},
+#         message = f"""Dear {request.user.username},
 
-Your order {order.order_id} has been placed successfully.
+# Your order {order.order_id} has been placed successfully.
 
-Items:
-{order_items}
+# Items:
+# {order_items}
 
-Total: ₹{order.total}
-Payment Method: {order.payment_method}
+# Total: ₹{order.total}
+# Payment Method: {order.payment_method}
 
-Thank you for shopping with us!
+# Thank you for shopping with us!
 
-– Swetha Collections
-"""
+# – Swetha Collections
+# """
 
-        # ✅ Send email safely (prevent crash)
-        try:
-            send_mail(
-                "Order Confirmation",
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                [request.user.email],
-                fail_silently=False
-            )
-        except (BadHeaderError, Exception) as e:
-            logger.error(f"❌ Email sending failed for order {order.order_id}: {e}")
-            messages.warning(request, "Your order was placed successfully, but the confirmation email could not be sent.")
+#         # ✅ Send email safely (prevent crash)
+#         try:
+#             send_mail(
+#                 "Order Confirmation",
+#                 message,
+#                 settings.DEFAULT_FROM_EMAIL,
+#                 [request.user.email],
+#                 fail_silently=False
+#             )
+#         except (BadHeaderError, Exception) as e:
+#             logger.error(f"❌ Email sending failed for order {order.order_id}: {e}")
+#             messages.warning(request, "Your order was placed successfully, but the confirmation email could not be sent.")
+
+                 # 🚫 Temporarily disabled order confirmation email
+        logger.info(f"Email sending skipped for order {order.order_id} (SMTP disabled)")
+
 
         # ✅ Clear cart after processing
         cart_items.delete()
