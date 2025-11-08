@@ -69,17 +69,25 @@ WSGI_APPLICATION = 'ecomproj.wsgi.application'
 #     )
 # }
 
+# import os
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv('DB_NAME', 'postgres'),   # default DB in RDS
+#         'USER': os.getenv('DB_USER', 'vinay'),
+#         'PASSWORD': os.getenv('DB_PASSWORD','Swetha-collections'),
+#         'HOST': os.getenv('DB_HOST', 'sc-database.cvum0use4w8m.eu-north-1.rds.amazonaws.com'),
+#         'PORT': os.getenv('DB_PORT', '5432'),
+#     }
+# }
+import dj_database_url
 import os
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv('DB_NAME', 'postgres'),   # default DB in RDS
-        'USER': os.getenv('DB_USER', 'vinay'),
-        'PASSWORD': os.getenv('DB_PASSWORD','Swetha-collections'),
-        'HOST': os.getenv('DB_HOST', 'sc-database.cvum0use4w8m.eu-north-1.rds.amazonaws.com'),
-        'PORT': os.getenv('DB_PORT', '5432'),
-    }
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL')
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [
