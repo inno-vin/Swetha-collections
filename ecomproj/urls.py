@@ -21,6 +21,8 @@ from django.conf.urls.static import static
 from django.conf import settings
 from django.http import HttpResponsePermanentRedirect
 from django.urls import re_path
+from django.urls import path
+from store.views import health
 
 def media_redirect(request, path):
     return HttpResponsePermanentRedirect(f"/media/images/{path}")
@@ -42,6 +44,8 @@ urlpatterns = [
     # Store pages still at root
     path('', include('store.urls', namespace='store')),
     # path("", include(("store.urls", "store"), namespace="store")),
+    path("health/", health, name="health"),
+
 ]
 
 

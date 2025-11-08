@@ -860,3 +860,9 @@ def cancel_order(request):
 
     messages.success(request, "Your cancellation/refund request has been submitted.")
     return redirect("userauths:account")
+
+
+from django.http import JsonResponse
+
+def health(request):
+    return JsonResponse({"status": "ok"})
