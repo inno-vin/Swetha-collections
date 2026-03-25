@@ -12,8 +12,8 @@ env.read_env()   # this will read .env in your project root
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+DEBUG = False
+ALLOWED_HOSTS = ['swetha-collections.onrender.com']
 
 INSTALLED_APPS = [
     'userauths',
